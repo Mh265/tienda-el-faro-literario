@@ -1,0 +1,30 @@
+# Credenciales y configuración sensible
+.env
+.env.local
+config/database.local.php
+includes/config.local.php
+
+# Dependencias (si en algún momento usan Composer o npm)
+/vendor/
+/node_modules/
+composer.lock
+
+# Archivos de log
+*.log
+error_log
+
+# Archivos temporales del sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Archivos de VS Code (opcional, descomenta si no quieren compartir su config de editor)
+# .vscode/
+
+# Bases de datos locales / respaldos
+*.sql.bak
+*.sqlite
+
+# Uploads de usuarios en pruebas locales (si guardan portadas subidas por el usuario)
+/assets/img/uploads/*
+!/assets/img/uploads/.gitkeep
