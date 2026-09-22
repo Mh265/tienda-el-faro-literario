@@ -1,4 +1,4 @@
-# 📚 Páginas & Tinta — Tienda en Línea de Libros
+# 📚 El Faro Literario — Tienda en Línea de Libros
 
 Proyecto final del curso de Desarrollo Full Stack (INTECAP).
 Tienda de comercio electrónico especializada en libros, construida con
