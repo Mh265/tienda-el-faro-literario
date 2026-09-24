@@ -1,6 +1,7 @@
 <?php
 /**
  * AyudanteSesion.php
+ * Ayudante para centralizar el manejo de la sesión nativa de PHP
  */
 class AyudanteSesion
 {
@@ -32,7 +33,7 @@ class AyudanteSesion
         return isset($_SESSION['id_usuario']);
     }
 
-    // Pensado para que FiltroAutenticacion.php lo use
+    // Pensado para que FiltroAutenticacion.php (feature futura) lo use
     // al proteger las rutas exclusivas de app/vistas/admin/.
     public static function esAdministrador()
     {
