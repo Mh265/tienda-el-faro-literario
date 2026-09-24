@@ -64,3 +64,4 @@ class AyudanteSesion
         session_destroy();
     }
 }
+?>

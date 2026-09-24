@@ -72,3 +72,4 @@ class Resena
         return $stmt->execute();
     }
 }
+?>

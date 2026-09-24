@@ -66,3 +66,4 @@ class DetallePedido
         return $stmt->execute();
     }
 }
+?>

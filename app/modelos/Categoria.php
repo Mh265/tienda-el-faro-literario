@@ -62,3 +62,4 @@ class Categoria
         return $stmt->execute();
     }
 }
+?>

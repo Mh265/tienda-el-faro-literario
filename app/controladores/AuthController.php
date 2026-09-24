@@ -99,3 +99,4 @@ class AuthController
         Respuesta::exito('Sesión activa.', AyudanteSesion::obtenerUsuarioSesion());
     }
 }
+?>
