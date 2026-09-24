@@ -66,3 +66,4 @@ class Wishlist
         return $stmt->execute();
     }
 }
+?>

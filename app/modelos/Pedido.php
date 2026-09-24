@@ -73,3 +73,4 @@ class Pedido
         return $stmt->execute();
     }
 }
+?>
