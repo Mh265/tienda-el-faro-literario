@@ -81,9 +81,9 @@ class Libro
     // Detalle de un libro por su ID, sin filtrar por estado: el Controlador
     // decide si un libro inactivo puede mostrarse (por ejemplo, a un admin
     // que lo va a editar) o no (a un visitante).
-    public static function obtenerPorId($id_producto)
+    public static function obtenerPorId($id_producto, $conexion = null)
     {
-        $conexion = BaseDatos::conectar();
+        $conexion = $conexion ?? BaseDatos::conectar();
         $sql = "SELECT p.*, c.nombre AS nombre_categoria
                 FROM productos p
                 INNER JOIN categorias c ON c.id_categoria = p.id_categoria
