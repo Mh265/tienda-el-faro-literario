@@ -53,8 +53,9 @@ class LibroController
         Respuesta::exito('Libro encontrado.', $libro);
     }
 
-    // POST /api/libros.php -> crea un libro nuevo. Solo administrador.
-    public static function crear($datos)
+        // POST /api/libros.php -> crea un libro nuevo. Solo administrador.
+    // $archivoImagen es $_FILES['imagen'] (o null si no se envió portada).
+    public static function crear($datos, $archivoImagen = null)
     {
         if (!AyudanteSesion::esAdministrador()) {
             Respuesta::error('No tiene permisos para crear libros.', 403);
@@ -65,11 +66,18 @@ class LibroController
             Respuesta::error($campos['error'], 400);
         }
 
-        // app/modelos/Categoria.php — se valida que la categoría exista
-        // antes del INSERT, para devolver un mensaje claro en vez de dejar
-        // que la FK lance una excepción de PDO sin capturar.
+        // app/modelos/Categoria.php
         if (!Categoria::obtenerPorId($campos['id_categoria'])) {
             Respuesta::error('La categoría indicada no existe.', 400);
+        }
+
+        // includes/ayudantes/AyudanteArchivo.php — la portada ahora llega
+        // como archivo real, no como texto en el body; sustituye lo que
+        // haya devuelto validarDatos() para 'imagen'.
+        try {
+            $campos['imagen'] = AyudanteArchivo::guardarPortada($archivoImagen);
+        } catch (Exception $e) {
+            Respuesta::error($e->getMessage(), 400);
         }
 
         // app/modelos/Libro.php
