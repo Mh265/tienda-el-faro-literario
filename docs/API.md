@@ -329,6 +329,100 @@ Requiere sesión de tipo `administrador`. Vuelve a poner `estado='activo'`. Mism
 
 Respuesta `200`: `{ "exito": true, "mensaje": "Libro reactivado correctamente.", "datos": null }`
 
+### `api/pedidos.php` ✅
+
+Controlador: `app/controladores/PedidoController.php` · Modelos:
+`app/modelos/Pedido.php` (cabecera), `app/modelos/DetallePedido.php`
+(líneas) y `app/modelos/Libro.php` (precio/stock al momento de comprar).
+
+Enruta por **método HTTP**, igual que `api/libros.php`. `accion` solo se
+usa dentro de `GET` para `admin-listado`.
+
+**Requiere sesión en todas sus acciones**, usando
+`FiltroAutenticacion::protegerApi()` / `protegerApiAdministrador()` desde
+el inicio de cada método del Controller.
+
+| Método | `accion` | Acceso | Descripción |
+|---|---|---|---|
+| `GET` | *(ninguna)* | Cliente | Historial de pedidos propios |
+| `GET` | `admin-listado` | Administrador | Todos los pedidos |
+| `GET` con `?id=` | *(ninguna)* | Cliente (dueño) / admin | Detalle del pedido + sus líneas |
+| `POST` | *(ninguna)* | Cliente | Crea un pedido desde el carrito (transacción) |
+| `PUT` con `?id=` | *(ninguna)* | Administrador | Cambia el estado del pedido |
+
+#### Crear pedido — `POST api/pedidos.php`
+
+Cuerpo (JSON):
+
+```json
+{
+  "items": [
+    { "id_producto": 5, "cantidad": 1 },
+    { "id_producto": 8, "cantidad": 2 }
+  ]
+}
+```
+
+El cliente **nunca** envía precio ni total — se calculan en el servidor con
+`productos.precio` al momento de crear el pedido. Toda la operación
+(validar stock, insertar `pedidos` + `detalle_pedido`, descontar
+`productos.cantidad`) es una única transacción PDO: si cualquier línea
+falla, no se guarda nada.
+
+Respuesta `201`:
+
+```json
+{ "exito": true, "mensaje": "Pedido creado correctamente.", "datos": { "id_pedido": 12, "total": 375.00 } }
+```
+
+| Código | Mensaje |
+|---|---|
+| 400 | El pedido debe incluir al menos un libro. |
+| 400 | Cada línea del pedido debe traer id_producto y cantidad (entero mayor a 0). |
+| 400 | El libro con id # no está disponible. |
+| 400 | Stock insuficiente para "Título". Disponible: N. |
+| 400 | El stock cambió mientras se procesaba el pedido. Intenta de nuevo. |
+| 401 | Debe iniciar sesión para acceder a este recurso. |
+
+#### Historial propio — `GET api/pedidos.php`
+
+Requiere sesión. Pedidos del usuario autenticado, sin sus líneas (para eso
+está el detalle).
+
+#### Listado administrativo — `GET api/pedidos.php?accion=admin-listado`
+
+Requiere sesión de tipo `administrador`.
+
+| Código | Mensaje |
+|---|---|
+| 403 | No tiene permisos de administrador para realizar esta acción. |
+
+#### Detalle — `GET api/pedidos.php?id=12`
+
+Requiere sesión. Devuelve el pedido con sus líneas en la clave `lineas`
+(cada línea incluye `nombre`, `autor` e `imagen` del libro). Un cliente que
+consulta un pedido ajeno recibe `404` (no `403`, para no revelar que
+existe); un administrador puede ver cualquiera.
+
+| Código | Mensaje |
+|---|---|
+| 400 | El id del pedido no es válido. |
+| 404 | Pedido no encontrado. |
+
+#### Cambiar estado — `PUT api/pedidos.php?id=12`
+
+Requiere sesión de tipo `administrador`. Cuerpo: `{ "estado": "pagado" }`.
+Valores permitidos: `pendiente`, `pagado`, `enviado`, `entregado`,
+`cancelado`. No valida secuencia (queda como regla de negocio abierta).
+
+Respuesta `200`: `{ "exito": true, "mensaje": "Estado del pedido actualizado correctamente.", "datos": null }`
+
+| Código | Mensaje |
+|---|---|
+| 400 | El id del pedido no es válido. |
+| 400 | Estado no válido. Use: pendiente, pagado, enviado, entregado, cancelado. |
+| 403 | No tiene permisos de administrador para realizar esta acción. |
+| 404 | Pedido no encontrado. |
 ---
 
 ## 3. Endpoints pendientes (📝 se especifican en su feature)
@@ -338,7 +432,6 @@ Cada uno se documenta aquí con parámetros, ejemplos y errores **antes** de imp
 | Endpoint | Operaciones previstas | Acceso previsto | Feature backend |
 |---|---|---|---|
 | `api/categorias.php` | Listar, detalle, crear, actualizar, eliminar | Lectura pública · escritura administrador | `Feature/categoria-api` |
-| `api/pedidos.php` | Crear desde el carrito, historial propio, todos (admin), detalle, cambiar estado | Cliente · administrador | `Feature/pedido-api` |
 | `api/resenas.php` | Listar por libro, crear, editar, eliminar | Lectura pública · escritura cliente | `Feature/resena-api` |
 | `api/wishlist.php` | Mi lista, agregar, quitar | Cliente | `Feature/wishlist-api` |
 | `api/usuarios.php` | Perfil propio, listado y gestión (admin) | Cliente · administrador | `Feature/usuario-api` |
@@ -357,6 +450,8 @@ Regla acordada para el carrito: el frontend envía solo `id_producto` y `cantida
 |---|---|---|
 | 24/09/2026 | `api/auth.php` | Documentado (`registro`, `login`, `logout`, `verificar-sesion`) |
 | 24/09/2026 | `api/libros.php` | Documentado: catálogo con búsqueda/filtros, detalle, crear, actualizar, dar de baja (soft delete), reactivar y listado admin |
+| 24/09/2026 | *(general)* | Agregado `includes/filtros/FiltroAutenticacion.php`: convención de 401 (sin sesión) / 403 (sin rol admin) para futuros endpoints protegidos
+| 25/09/2026 | `api/pedidos.php` | Documentado: creación transaccional desde el carrito, historial propio, listado admin, detalle con líneas, cambio de estado |
 
 ---
 
@@ -372,4 +467,3 @@ Errores: código | mensaje
 Notas: reglas de negocio relevantes para el frontend
 ```
 
-| 24/09/2026 | *(general)* | Agregado `includes/filtros/FiltroAutenticacion.php`: convención de 401 (sin sesión) / 403 (sin rol admin) para futuros endpoints protegidos
