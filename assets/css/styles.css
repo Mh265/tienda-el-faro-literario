@@ -1,0 +1,153 @@
+/* ===== BASE LAYOUT ===== */
+:root {
+  --faro-vino: #6B2737;
+  --faro-vino-profundo: #4A1B27;
+  --faro-dorado: #C9A227;
+  --faro-papel: #F8F5F0;
+  --faro-tinta: #2B2B2B;
+
+  /* Bootstrap 5.3 pinta los enlaces con estas variables */
+  --bs-link-color-rgb: 107, 39, 55;
+  --bs-link-hover-color-rgb: 74, 27, 39;
+}
+
+/* Pie de página pegado abajo aunque la vista tenga poco contenido */
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+main {
+  flex: 1 0 auto;
+}
+
+/* ===== BOTONES ===== */
+.btn-primary {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: #6B2737;
+  --bs-btn-border-color: #6B2737;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #4A1B27;
+  --bs-btn-hover-border-color: #4A1B27;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #4A1B27;
+  --bs-btn-active-border-color: #4A1B27;
+  --bs-btn-disabled-bg: #6B2737;
+  --bs-btn-disabled-border-color: #6B2737;
+  --bs-btn-focus-shadow-rgb: 107, 39, 55;
+}
+.btn-outline-primary {
+  --bs-btn-color: #6B2737;
+  --bs-btn-border-color: #6B2737;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #6B2737;
+  --bs-btn-hover-border-color: #6B2737;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #4A1B27;
+  --bs-btn-active-border-color: #4A1B27;
+  --bs-btn-focus-shadow-rgb: 107, 39, 55;
+}
+.btn-secondary {
+  --bs-btn-color: #2B2B2B;
+  --bs-btn-bg: #C9A227;
+  --bs-btn-border-color: #C9A227;
+  --bs-btn-hover-color: #2B2B2B;
+  --bs-btn-hover-bg: #B38F1F;
+  --bs-btn-hover-border-color: #B38F1F;
+  --bs-btn-active-color: #2B2B2B;
+  --bs-btn-active-bg: #B38F1F;
+  --bs-btn-active-border-color: #B38F1F;
+}
+
+/* ===== NAVBAR ===== */
+.navbar-faro {
+  background-color: #fff;
+  border-bottom: 3px solid var(--faro-dorado);
+}
+.navbar-faro .navbar-brand {
+  color: var(--faro-vino);
+  font-weight: 700;
+}
+.navbar-faro .nav-link {
+  color: var(--faro-tinta);
+  font-weight: 500;
+}
+.navbar-faro .nav-link:hover,
+.navbar-faro .nav-link:focus {
+  color: var(--faro-vino);
+}
+.logo-marca {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+}
+.enlace-carrito {
+  position: relative;
+  color: var(--faro-vino);
+  padding: 0.25rem 0.5rem;
+}
+.enlace-carrito:hover {
+  color: var(--faro-vino-profundo);
+}
+.contador-carrito {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  background-color: var(--faro-dorado);
+  color: var(--faro-tinta);
+}
+
+/* ===== PIE DE PÁGINA ===== */
+.pie-sitio {
+  background-color: var(--faro-vino-profundo);
+  color: var(--faro-papel);
+  border-top: 3px solid var(--faro-dorado);
+}
+.pie-sitio a {
+  color: var(--faro-dorado);
+  text-decoration: none;
+}
+.pie-sitio a:hover,
+.pie-sitio a:focus {
+  text-decoration: underline;
+}
+
+/* ===== INICIO ===== */
+.hero-inicio {
+  background-color: var(--faro-papel);
+  border-radius: 0.5rem;
+  padding: 3rem 2rem;
+}
+.hero-inicio h1 {
+  color: var(--faro-vino);
+}
+.hero-portada-generica {
+  background-color: var(--faro-dorado);
+  border-radius: 0.5rem;
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tarjeta-libro {
+  height: 100%;
+  border: 1px solid rgba(43, 43, 43, 0.1);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.tarjeta-libro:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0.5rem 1rem rgba(43, 43, 43, 0.15);
+}
+.tarjeta-libro img {
+  height: 220px;
+  object-fit: cover;
+  background-color: var(--faro-papel);
+}
+.tarjeta-libro .card-title {
+  font-family: 'Playfair Display', serif;
+  color: var(--faro-tinta);
+}
+.tarjeta-libro .precio-libro {
+  color: var(--faro-vino);
+  font-weight: 600;
+}
