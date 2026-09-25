@@ -98,9 +98,3 @@ Ver el detalle completo en `docs/API.md`. Resumen:
   que hace falta.
 - `Feature/categoria-api`, `Feature/wishlist-api` y `Feature/resena-api`
   siguen sin implementar.
-- ⚠️ **Hallazgo aparte, no de esta feature:** al verificar el repositorio se
-  confirmó que `includes/ayudantes/AyudanteArchivo.php` **no existe**,
-  aunque `api/libros.php` y `LibroController.php` ya lo requieren
-  (`require_once`) desde `Feature/libro-api`. Tal como está hoy en
-  `develop`, cualquier `POST` o `PUT` a `api/libros.php` truena con un
-  error fatal de PHP (archivo no encontrado). Crearlo antes de la demo.
