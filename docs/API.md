@@ -2,7 +2,7 @@
 
 Contrato entre Backend (Milton) y Frontend (Jenifer). Lo mantiene Milton y se actualiza en el mismo Pull Request de cada feature de backend.
 
-**Última actualización:** 23/09/2026 · **Feature documentada:** `Feature/auth-controller`
+**Última actualización:** 24/09/2026 · **Feature documentada:** `Feature/libro-api`
 
 **Estados:** ✅ implementado · 🚧 en desarrollo · 📝 propuesto (aún no implementado)
 
@@ -18,7 +18,7 @@ Contrato entre Backend (Milton) y Frontend (Jenifer). Lo mantiene Milton y se ac
 | Cabecera de respuesta | `Content-Type: application/json; charset=utf-8` |
 | Sesión | Cookie de sesión de PHP. Con `fetch()` en el mismo origen se envía sola |
 | Nombres de campos | Iguales a las columnas de la BD (`snake_case`) |
-| Selección de operación | `auth.php` usa el parámetro `accion`, en la URL (`?accion=login`) o en el cuerpo JSON |
+| Selección de operación | `auth.php` usa el parámetro `accion`. `libros.php` enruta principalmente por **método HTTP** (GET/POST/PUT/DELETE) y usa `accion` solo para los casos que no encajan en el CRUD estándar (`admin-listado`, `reactivar`) |
 
 ### Formato de respuesta (`includes/ayudantes/Respuesta.php`)
 
@@ -44,7 +44,9 @@ Error (no incluye `datos`):
 | 201 | Recurso creado |
 | 400 | Datos faltantes o inválidos |
 | 401 | Credenciales incorrectas o sin sesión activa |
-| 404 | Acción no reconocida |
+| 403 | Sesión activa pero sin permisos (no es administrador) |
+| 404 | Acción no reconocida / recurso no encontrado |
+| 405 | Método HTTP no soportado por el endpoint |
 | 409 | Conflicto (correo ya registrado) |
 
 ### Aviso para el frontend: errores que no vienen en JSON
@@ -177,13 +179,155 @@ Sin sesión responde `401` con *"No hay una sesión activa."*. Esto **no es una 
 
 ---
 
+### `api/libros.php` ✅
+
+Controlador: `app/controladores/LibroController.php` · Modelos: `app/modelos/Libro.php` (principal) y `app/modelos/Categoria.php` (solo para validar que la categoría exista al crear/editar).
+
+Enruta por **método HTTP**. `accion` solo se usa dentro de `GET` (`admin-listado`) y `PUT` (`reactivar`) para los dos casos que no son un CRUD estándar.
+
+**Nota sobre permisos:** como `Feature/filtro-autenticacion` todavía no se implementa, `LibroController` valida `AyudanteSesion::esAdministrador()` directamente en cada acción de escritura (crear, actualizar, dar de baja, reactivar, listado admin). Cuando se implemente el filtro de rutas, este chequeo puede quedarse igual (es una verificación de rol, no de rutas) o moverse — a decidir en esa feature.
+
+| Método | `accion` | Acceso | Descripción |
+|---|---|---|---|
+| `GET` | *(ninguna)* | Público | Catálogo de libros con `estado='activo'`, con búsqueda y filtros |
+| `GET` con `?id=` | *(ninguna)* | Público / admin | Detalle de un libro |
+| `GET` | `admin-listado` | Administrador | Listado completo (activos e inactivos) para el panel admin |
+| `POST` | *(ninguna)* | Administrador | Crea un libro nuevo |
+| `PUT` con `?id=` | *(ninguna)* | Administrador | Actualiza los datos de un libro |
+| `PUT` con `?id=` | `reactivar` | Administrador | Reactiva un libro dado de baja |
+| `DELETE` con `?id=` | *(ninguna)* | Administrador | Da de baja el libro (`estado='inactivo'`); **nunca es un DELETE físico** |
+
+#### Catálogo — `GET api/libros.php`
+
+Todos los parámetros son opcionales y van en la query string:
+
+| Parámetro | Tipo | Regla |
+|---|---|---|
+| `q` | string | Busca coincidencias en `nombre` o `autor` (`LIKE %q%`) |
+| `id_categoria` | int | Filtra por una categoría exacta |
+| `precio_min` | decimal | `precio >= precio_min` |
+| `precio_max` | decimal | `precio <= precio_max` |
+| `disponible` | `1` | Si se envía `1`, solo libros con `cantidad > 0` |
+| `orden` | string | Uno de: `precio_asc`, `precio_desc`, `nombre_asc`, `recientes` (por defecto: `recientes`, es decir más nuevos primero) |
+
+Ejemplo: `GET api/libros.php?q=dune&precio_max=200&orden=precio_asc`
+
+Respuesta `200`:
+
+```json
+{
+  "exito": true,
+  "mensaje": "Listado de libros obtenido correctamente.",
+  "datos": [
+    {
+      "id_producto": 5,
+      "id_categoria": 2,
+      "nombre": "Dune",
+      "autor": "Frank Herbert",
+      "editorial": "Chilton Books",
+      "descripcion_corta": "Épica de ciencia ficción ambientada en el planeta Arrakis.",
+      "descripcion_larga": "...",
+      "precio": "210.00",
+      "cantidad": 9,
+      "imagen": null,
+      "fecha_publicacion": null,
+      "estado": "activo",
+      "fecha_creacion": "2026-09-01 10:00:00",
+      "nombre_categoria": "Ciencia Ficción"
+    }
+  ]
+}
+```
+
+#### Listado administrativo — `GET api/libros.php?accion=admin-listado`
+
+Igual forma de respuesta que el catálogo, pero incluye libros con `estado='inactivo'` y no aplica filtros. Requiere sesión de tipo `administrador`.
+
+| Código | Mensaje |
+|---|---|
+| 403 | No tiene permisos para ver este listado. |
+
+#### Detalle — `GET api/libros.php?id=5`
+
+Un visitante o cliente que consulta un libro `inactivo` recibe `404`, como si no existiera (para no revelar libros dados de baja). Un administrador sí puede verlo (por ejemplo, para editarlo).
+
+| Código | Mensaje |
+|---|---|
+| 400 | El id del libro no es válido. |
+| 404 | Libro no encontrado. |
+
+#### Crear — `POST api/libros.php`
+
+Requiere sesión de tipo `administrador`. Cuerpo JSON:
+
+| Campo | Tipo | Obligatorio | Regla |
+|---|---|---|---|
+| `id_categoria` | int | Sí | Debe existir en `categorias` |
+| `nombre` | string | Sí | Título del libro, no vacío |
+| `autor` | string | Sí | No vacío |
+| `editorial` | string | No | — |
+| `descripcion_corta` | string | No | Para tarjetas del catálogo |
+| `descripcion_larga` | string | No | Para la vista de detalle |
+| `precio` | decimal | Sí | Mayor a 0 |
+| `cantidad` | int | No (default 0) | No puede ser negativa |
+| `imagen` | string | No | Ruta/nombre del archivo en `assets/img/uploads/` |
+| `fecha_publicacion` | date (`YYYY-MM-DD`) | No | — |
+
+El `estado` siempre nace en `'activo'`; no se recibe desde el cliente.
+
+Respuesta `201`:
+
+```json
+{ "exito": true, "mensaje": "Libro creado correctamente.", "datos": { "id_producto": 31 } }
+```
+
+| Código | Mensaje |
+|---|---|
+| 400 | La categoría es obligatoria. |
+| 400 | El título y el autor son obligatorios. |
+| 400 | El precio debe ser un número mayor a 0. |
+| 400 | La cantidad en stock no puede ser negativa. |
+| 400 | La categoría indicada no existe. |
+| 403 | No tiene permisos para crear libros. |
+
+#### Actualizar — `PUT api/libros.php?id=5`
+
+Requiere sesión de tipo `administrador`. Mismo cuerpo y mismas reglas que `crear`. No cambia `estado` (para eso están `reactivar` y el `DELETE`).
+
+Respuesta `200`: `{ "exito": true, "mensaje": "Libro actualizado correctamente.", "datos": null }`
+
+Mismos códigos de error que `crear`, más:
+
+| Código | Mensaje |
+|---|---|
+| 404 | Libro no encontrado. |
+
+#### Dar de baja — `DELETE api/libros.php?id=5`
+
+Requiere sesión de tipo `administrador`. Marca `estado='inactivo'`; el catálogo público deja de mostrar el libro. **No borra la fila**: un libro con ventas registradas no podría borrarse de todos modos por la FK `RESTRICT` de `detalle_pedido` hacia `productos`.
+
+Respuesta `200`: `{ "exito": true, "mensaje": "Libro dado de baja correctamente.", "datos": null }`
+
+| Código | Mensaje |
+|---|---|
+| 400 | El id del libro no es válido. |
+| 403 | No tiene permisos para dar de baja libros. |
+| 404 | Libro no encontrado. |
+
+#### Reactivar — `PUT api/libros.php?id=5&accion=reactivar`
+
+Requiere sesión de tipo `administrador`. Vuelve a poner `estado='activo'`. Mismos códigos de error que `darDeBaja`.
+
+Respuesta `200`: `{ "exito": true, "mensaje": "Libro reactivado correctamente.", "datos": null }`
+
+---
+
 ## 3. Endpoints pendientes (📝 se especifican en su feature)
 
 Cada uno se documenta aquí con parámetros, ejemplos y errores **antes** de implementarlo, para que el frontend pueda trabajar con datos simulados.
 
 | Endpoint | Operaciones previstas | Acceso previsto | Feature backend |
 |---|---|---|---|
-| `api/libros.php` | Listar (búsqueda y filtros), detalle, crear, actualizar, eliminar/dar de baja | Lectura pública · escritura administrador | `Feature/libro-api` |
 | `api/categorias.php` | Listar, detalle, crear, actualizar, eliminar | Lectura pública · escritura administrador | `Feature/categoria-api` |
 | `api/pedidos.php` | Crear desde el carrito, historial propio, todos (admin), detalle, cambiar estado | Cliente · administrador | `Feature/pedido-api` |
 | `api/resenas.php` | Listar por libro, crear, editar, eliminar | Lectura pública · escritura cliente | `Feature/resena-api` |
@@ -191,8 +335,6 @@ Cada uno se documenta aquí con parámetros, ejemplos y errores **antes** de imp
 | `api/usuarios.php` | Perfil propio, listado y gestión (admin) | Cliente · administrador | `Feature/usuario-api` |
 
 ### Referencia: campos de un libro en la BD (tabla `productos`)
-
-El JSON final de `libros.php` se definirá en `Feature/libro-api`; mientras tanto el frontend puede simular datos con estos campos:
 
 `id_producto`, `id_categoria`, `nombre` (título), `autor`, `editorial`, `descripcion_corta`, `descripcion_larga`, `precio`, `cantidad` (stock), `imagen`, `fecha_publicacion`, `estado` (`activo`/`inactivo`).
 
@@ -205,6 +347,7 @@ Regla acordada para el carrito: el frontend envía solo `id_producto` y `cantida
 | Fecha | Endpoint | Cambio |
 |---|---|---|
 | 24/09/2026 | `api/auth.php` | Documentado (`registro`, `login`, `logout`, `verificar-sesion`) |
+| 24/09/2026 | `api/libros.php` | Documentado: catálogo con búsqueda/filtros, detalle, crear, actualizar, dar de baja (soft delete), reactivar y listado admin |
 
 ---
 
