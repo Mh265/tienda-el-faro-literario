@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../includes/config/BaseDatos.php';
 require_once __DIR__ . '/../includes/ayudantes/Respuesta.php';
 require_once __DIR__ . '/../includes/ayudantes/AyudanteSesion.php';
-require_once __DIR__ . '/../includes/ayudantes/AyudanteArchivo.php'; // NUEVO
+require_once __DIR__ . '/../includes/ayudantes/AyudanteArchivo.php';
 require_once __DIR__ . '/../app/modelos/Libro.php';
 require_once __DIR__ . '/../app/modelos/Categoria.php';
 require_once __DIR__ . '/../app/controladores/LibroController.php';
