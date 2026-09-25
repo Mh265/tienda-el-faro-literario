@@ -37,9 +37,9 @@ class Pedido
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     //Registra una nueva compra en la base de datos. Por defecto le asigna el estado 'pendiente'
-    public static function crear($id_usuario, $total, $estado = 'pendiente')
+    public static function crear($id_usuario, $total, $estado = 'pendiente', $conexion = null)
     {
-        $conexion = BaseDatos::conectar();
+        $conexion = $conexion ?? BaseDatos::conectar();
         $sql = "INSERT INTO pedidos (id_usuario, total, estado) VALUES (:id_usuario, :total, :estado)";
         $stmt = $conexion->prepare($sql);
         $stmt->bindParam(":id_usuario", $id_usuario, PDO::PARAM_INT);

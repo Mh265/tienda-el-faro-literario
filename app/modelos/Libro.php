@@ -81,9 +81,9 @@ class Libro
     // Detalle de un libro por su ID, sin filtrar por estado: el Controlador
     // decide si un libro inactivo puede mostrarse (por ejemplo, a un admin
     // que lo va a editar) o no (a un visitante).
-    public static function obtenerPorId($id_producto)
+    public static function obtenerPorId($id_producto, $conexion = null)
     {
-        $conexion = BaseDatos::conectar();
+        $conexion = $conexion ?? BaseDatos::conectar();
         $sql = "SELECT p.*, c.nombre AS nombre_categoria
                 FROM productos p
                 INNER JOIN categorias c ON c.id_categoria = p.id_categoria
@@ -173,6 +173,24 @@ class Libro
         $stmt = $conexion->prepare($sql);
         $stmt->bindParam(":id_producto", $id_producto, PDO::PARAM_INT);
         return $stmt->execute();
+    }
+
+    // La condición "cantidad >= :cantidad_minima" en el propio UPDATE evita que el
+    // stock quede negativo si dos pedidos concurrentes pasan la validación inicial
+    // casi al mismo tiempo. Si no se actualizó ninguna fila (rowCount() === 0),
+    // el Controller interpreta que el stock ya no alcanza y revierte el pedido.
+    public static function descontarStock($id_producto, $cantidad, $conexion = null)
+    {
+        $conexion = $conexion ?? BaseDatos::conectar();
+        $sql = "UPDATE productos
+                SET cantidad = cantidad - :cantidad
+                WHERE id_producto = :id_producto AND cantidad >= :cantidad_minima";
+        $stmt = $conexion->prepare($sql);
+        $stmt->bindParam(":cantidad", $cantidad, PDO::PARAM_INT);
+        $stmt->bindParam(":id_producto", $id_producto, PDO::PARAM_INT);
+        $stmt->bindParam(":cantidad_minima", $cantidad, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->rowCount() > 0;
     }
 }
 ?>

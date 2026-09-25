@@ -32,9 +32,9 @@ class DetallePedido
     }
 
     //Inserta un nuevo renglón de producto asociado a la cabecera del pedido
-    public static function crear($id_pedido, $id_producto, $cantidad, $precio)
+    public static function crear($id_pedido, $id_producto, $cantidad, $precio, $conexion = null)
     {
-        $conexion = BaseDatos::conectar();
+        $conexion = $conexion ?? BaseDatos::conectar();
         $sql = "INSERT INTO detalle_pedido (id_pedido, id_producto, cantidad, precio)
                 VALUES (:id_pedido, :id_producto, :cantidad, :precio)";
         $stmt = $conexion->prepare($sql);
