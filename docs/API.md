@@ -2,7 +2,7 @@
 
 Contrato entre Backend (Milton) y Frontend (Jenifer). Lo mantiene Milton y se actualiza en el mismo Pull Request de cada feature de backend.
 
-**Última actualización:** 24/09/2026 · **Feature documentada:** `Feature/libro-api`
+**Última actualización:** 25/09/2026 · **Feature documentada:** `Feature/pedido-api`
 
 **Estados:** ✅ implementado · 🚧 en desarrollo · 📝 propuesto (aún no implementado)
 
