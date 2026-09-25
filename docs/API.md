@@ -362,3 +362,5 @@ Respuesta 200/201: ejemplo real con datos del seed
 Errores: código | mensaje
 Notas: reglas de negocio relevantes para el frontend
 ```
+
+| 24/09/2026 | *(general)* | Agregado `includes/filtros/FiltroAutenticacion.php`: convención de 401 (sin sesión) / 403 (sin rol admin) para futuros endpoints protegidos
