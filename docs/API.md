@@ -258,7 +258,8 @@ Un visitante o cliente que consulta un libro `inactivo` recibe `404`, como si no
 
 #### Crear — `POST api/libros.php`
 
-Requiere sesión de tipo `administrador`. Cuerpo JSON:
+Requiere sesión de tipo `administrador`. **Cuerpo: `multipart/form-data`**
+(no JSON, por la portada). Campos de texto normales + un campo de archivo:
 
 | Campo | Tipo | Obligatorio | Regla |
 |---|---|---|---|
@@ -270,10 +271,12 @@ Requiere sesión de tipo `administrador`. Cuerpo JSON:
 | `descripcion_larga` | string | No | Para la vista de detalle |
 | `precio` | decimal | Sí | Mayor a 0 |
 | `cantidad` | int | No (default 0) | No puede ser negativa |
-| `imagen` | string | No | Ruta/nombre del archivo en `assets/img/uploads/` |
+| `imagen` | **archivo** | No | JPG/JPEG/PNG/WEBP, máximo 2 MB. Si no se envía, el libro queda con portada por defecto en el frontend |
 | `fecha_publicacion` | date (`YYYY-MM-DD`) | No | — |
 
-El `estado` siempre nace en `'activo'`; no se recibe desde el cliente.
+El servidor genera el nombre final del archivo (nunca se usa el nombre
+original) y solo guarda ese nombre en la BD, no la ruta completa. El
+frontend arma la URL como `assets/img/uploads/<nombre>`.
 
 Respuesta `201`:
 
@@ -288,7 +291,13 @@ Respuesta `201`:
 | 400 | El precio debe ser un número mayor a 0. |
 | 400 | La cantidad en stock no puede ser negativa. |
 | 400 | La categoría indicada no existe. |
+| 400 | La imagen no debe superar los 2 MB. |
+| 400 | Formato de imagen no permitido. Use JPG, PNG o WEBP. |
 | 403 | No tiene permisos para crear libros. |
+
+**Nota para el frontend:** este endpoint espera `FormData`, no
+`JSON.stringify`. No fijes manualmente el header `Content-Type`: el
+navegador lo arma solo (con el boundary correcto) al usar `FormData`.
 
 #### Actualizar — `PUT api/libros.php?id=5`
 
