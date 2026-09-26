@@ -151,3 +151,47 @@ main {
   color: var(--faro-vino);
   font-weight: 600;
 }
+
+/* ===== AUTH (login / registro) — Feature/frontend-auth ===== */
+.tarjeta-auth {
+  background-color: var(--faro-vino-profundo);
+  border: none;
+  border-radius: 0.75rem;
+  color: var(--faro-papel);
+}
+.tarjeta-auth h2 {
+  color: var(--faro-papel);
+  font-family: 'Playfair Display', serif;
+}
+.tarjeta-auth .form-control {
+  background-color: rgba(248, 245, 240, 0.08);
+  border-color: rgba(248, 245, 240, 0.35);
+  color: var(--faro-papel);
+}
+.tarjeta-auth .form-control:focus {
+  background-color: rgba(248, 245, 240, 0.12);
+  border-color: var(--faro-dorado);
+  color: var(--faro-papel);
+  box-shadow: 0 0 0 0.2rem rgba(201, 162, 39, 0.25);
+}
+.tarjeta-auth .form-control::placeholder {
+  color: rgba(248, 245, 240, 0.45);
+}
+.tarjeta-auth .form-floating > label {
+  color: rgba(248, 245, 240, 0.65);
+}
+.tarjeta-auth a {
+  color: var(--faro-dorado);
+  text-decoration: none;
+}
+.tarjeta-auth a:hover {
+  text-decoration: underline;
+}
+.texto-auxiliar {
+  color: rgba(248, 245, 240, 0.6);
+}
+.avatar-auth {
+  width: 96px;
+  height: 96px;
+  color: var(--faro-dorado);
+}
