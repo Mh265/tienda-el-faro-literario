@@ -195,3 +195,20 @@ main {
   height: 96px;
   color: var(--faro-dorado);
 }
+
+/* ===== CATÁLOGO — Feature/frontend-catalogo ===== */
+.tarjeta-filtros {
+  background-color: var(--faro-papel);
+  border: 1px solid rgba(43, 43, 43, 0.1);
+  border-radius: 0.75rem;
+}
+.badge-categoria {
+  background-color: var(--faro-dorado);
+  color: var(--faro-tinta);
+  font-weight: 500;
+}
+.badge-sin-stock {
+  background-color: #C1502E; /* Terracota: alerta / stock bajo */
+  color: #fff;
+  font-weight: 500;
+}
