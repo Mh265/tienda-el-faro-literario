@@ -212,3 +212,66 @@ main {
   color: #fff;
   font-weight: 500;
 }
+
+/* ===== CARRITO Y CHECKOUT — Feature/frontend-carrito, Feature/frontend-checkout ===== */
+.tarjeta-resumen {
+  background-color: #fff;
+  border: 1px solid rgba(43, 43, 43, 0.1);
+  border-radius: 0.75rem;
+}
+.portada-carrito {
+  height: 90px;
+  width: 100%;
+  object-fit: cover;
+}
+
+/* ===== PERFIL — Feature/frontend-perfil ===== */
+.tarjeta-perfil {
+  background-color: #fff;
+  border: 1px solid rgba(43, 43, 43, 0.1);
+  border-radius: 0.75rem;
+}
+.avatar-perfil {
+  width: 72px;
+  height: 72px;
+  color: var(--faro-vino);
+}
+
+/* ===== WISHLIST — Feature/frontend-wishlist ===== */
+.tarjeta-wishlist {
+  background-color: #fff;
+  border: 1px solid rgba(43, 43, 43, 0.1);
+  border-radius: 0.5rem;
+}
+
+/* ===== MIS PEDIDOS — Feature/frontend-mis-pedidos ===== */
+.tarjeta-pedido {
+  background-color: #fff;
+  border: 1px solid rgba(43, 43, 43, 0.1);
+  border-radius: 0.75rem;
+}
+
+/* ===== ADMIN — Feature/frontend-admin-*, Feature/frontend-dashboard-admin ===== */
+.nav-admin .nav-link {
+  color: var(--faro-tinta);
+  font-weight: 500;
+}
+.nav-admin .nav-link.active {
+  background-color: var(--faro-vino);
+  color: #fff;
+}
+.tarjeta-stat {
+  background-color: #fff;
+  border: 1px solid rgba(43, 43, 43, 0.1);
+  border-radius: 0.75rem;
+}
+.tabla-admin th {
+  color: var(--faro-vino);
+  font-weight: 600;
+}
+.miniatura-admin {
+  height: 50px;
+  width: 36px;
+  object-fit: cover;
+  border-radius: 0.25rem;
+}
