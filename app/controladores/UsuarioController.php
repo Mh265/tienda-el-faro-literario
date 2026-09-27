@@ -1,8 +1,7 @@
 <?php
 /**
  * Controlador de usuarios: perfil propio (cliente/admin) y gestión de
- * usuarios (solo administrador). Usa el Modelo Usuario.php. No maneja
- * correo ni contraseña -- Usuario::actualizar() no los toca.
+ * usuarios (solo administrador).
  */
 class UsuarioController
 {
