@@ -2,7 +2,7 @@
 
 Contrato entre Backend (Milton) y Frontend (Jenifer). Lo mantiene Milton y se actualiza en el mismo Pull Request de cada feature de backend.
 
-**Última actualización:** 25/09/2026 · **Feature documentada:** `Feature/pedido-api`
+**Última actualización:** 26/09/2026 · **Features documentadas:** `Feature/categoria-api`, `Feature/wishlist-api`, `Feature/resena-api`, `Feature/usuario-api`
 
 **Estados:** ✅ implementado · 🚧 en desarrollo · 📝 propuesto (aún no implementado)
 
@@ -18,7 +18,7 @@ Contrato entre Backend (Milton) y Frontend (Jenifer). Lo mantiene Milton y se ac
 | Cabecera de respuesta | `Content-Type: application/json; charset=utf-8` |
 | Sesión | Cookie de sesión de PHP. Con `fetch()` en el mismo origen se envía sola |
 | Nombres de campos | Iguales a las columnas de la BD (`snake_case`) |
-| Selección de operación | `auth.php` usa el parámetro `accion`. `libros.php` enruta principalmente por **método HTTP** (GET/POST/PUT/DELETE) y usa `accion` solo para los casos que no encajan en el CRUD estándar (`admin-listado`, `reactivar`) |
+| Selección de operación | `auth.php` usa el parámetro `accion`. `libros.php`, `pedidos.php`, `categorias.php`, `wishlist.php`, `resenas.php` y `usuarios.php` enrutan principalmente por **método HTTP** (GET/POST/PUT/DELETE) y usan `accion` solo para los casos que no encajan en el CRUD estándar (`admin-listado`, `reactivar`) |
 
 ### Formato de respuesta (`includes/ayudantes/Respuesta.php`)
 
@@ -44,10 +44,10 @@ Error (no incluye `datos`):
 | 201 | Recurso creado |
 | 400 | Datos faltantes o inválidos |
 | 401 | Credenciales incorrectas o sin sesión activa |
-| 403 | Sesión activa pero sin permisos (no es administrador) |
+| 403 | Sesión activa pero sin permisos (no es dueño del recurso o no es administrador) |
 | 404 | Acción no reconocida / recurso no encontrado |
 | 405 | Método HTTP no soportado por el endpoint |
-| 409 | Conflicto (correo ya registrado) |
+| 409 | Conflicto (correo/nombre/registro ya existente, o restricción de integridad referencial) |
 
 ### Aviso para el frontend: errores que no vienen en JSON
 
@@ -185,7 +185,7 @@ Controlador: `app/controladores/LibroController.php` · Modelos: `app/modelos/Li
 
 Enruta por **método HTTP**. `accion` solo se usa dentro de `GET` (`admin-listado`) y `PUT` (`reactivar`) para los dos casos que no son un CRUD estándar.
 
-**Nota sobre permisos:** como `Feature/filtro-autenticacion` todavía no se implementa, `LibroController` valida `AyudanteSesion::esAdministrador()` directamente en cada acción de escritura (crear, actualizar, dar de baja, reactivar, listado admin). Cuando se implemente el filtro de rutas, este chequeo puede quedarse igual (es una verificación de rol, no de rutas) o moverse — a decidir en esa feature.
+**Nota sobre permisos:** `LibroController` valida `AyudanteSesion::esAdministrador()` directamente en cada acción de escritura (crear, actualizar, dar de baja, reactivar, listado admin), por decisión explícita tomada al implementar `Feature/filtro-autenticacion` (para no arriesgar una regresión a un día de la entrega). Es funcionalmente equivalente a usar `FiltroAutenticacion::protegerApiAdministrador()`.
 
 | Método | `accion` | Acceso | Descripción |
 |---|---|---|---|
@@ -301,7 +301,7 @@ navegador lo arma solo (con el boundary correcto) al usar `FormData`.
 
 #### Actualizar — `PUT api/libros.php?id=5`
 
-Requiere sesión de tipo `administrador`. Mismo cuerpo y mismas reglas que `crear`. No cambia `estado` (para eso están `reactivar` y el `DELETE`).
+Requiere sesión de tipo `administrador`. Mismo cuerpo y mismas reglas que `crear`. No cambia `estado` (para eso están `reactivar` y el `DELETE`). No permite actualizar la portada (`imagen`) por este medio; ese campo queda intacto.
 
 Respuesta `200`: `{ "exito": true, "mensaje": "Libro actualizado correctamente.", "datos": null }`
 
@@ -328,6 +328,8 @@ Respuesta `200`: `{ "exito": true, "mensaje": "Libro dado de baja correctamente.
 Requiere sesión de tipo `administrador`. Vuelve a poner `estado='activo'`. Mismos códigos de error que `darDeBaja`.
 
 Respuesta `200`: `{ "exito": true, "mensaje": "Libro reactivado correctamente.", "datos": null }`
+
+---
 
 ### `api/pedidos.php` ✅
 
@@ -368,6 +370,11 @@ El cliente **nunca** envía precio ni total — se calculan en el servidor con
 (validar stock, insertar `pedidos` + `detalle_pedido`, descontar
 `productos.cantidad`) es una única transacción PDO: si cualquier línea
 falla, no se guarda nada.
+
+**Confirmación en pantalla (RF20):** la respuesta ya trae `id_pedido` y
+`total`, suficiente para que el frontend arme una pantalla de confirmación
+inmediatamente después de crear el pedido. El envío de un correo de
+confirmación queda fuera de alcance del proyecto.
 
 Respuesta `201`:
 
@@ -423,24 +430,300 @@ Respuesta `200`: `{ "exito": true, "mensaje": "Estado del pedido actualizado cor
 | 400 | Estado no válido. Use: pendiente, pagado, enviado, entregado, cancelado. |
 | 403 | No tiene permisos de administrador para realizar esta acción. |
 | 404 | Pedido no encontrado. |
+
 ---
 
-## 3. Endpoints pendientes (📝 se especifican en su feature)
+### `api/categorias.php` ✅
 
-Cada uno se documenta aquí con parámetros, ejemplos y errores **antes** de implementarlo, para que el frontend pueda trabajar con datos simulados.
+Controlador: `app/controladores/CategoriaController.php` · Modelo: `app/modelos/Categoria.php`.
 
-| Endpoint | Operaciones previstas | Acceso previsto | Feature backend |
+Enruta por **método HTTP**, sin acciones especiales.
+
+| Método | Acceso | Descripción |
+|---|---|---|
+| `GET` | Público | Listado de categorías, ordenado por nombre |
+| `GET` con `?id=` | Público | Detalle de una categoría |
+| `POST` | Administrador | Crea una categoría nueva |
+| `PUT` con `?id=` | Administrador | Actualiza nombre/descripción |
+| `DELETE` con `?id=` | Administrador | Elimina la categoría |
+
+#### Listado — `GET api/categorias.php`
+
+Respuesta `200`:
+
+```json
+{
+  "exito": true,
+  "mensaje": "Listado de categorías obtenido correctamente.",
+  "datos": [
+    { "id_categoria": 6, "nombre": "Fantasía", "descripcion": "Mundos y criaturas imaginarias" }
+  ]
+}
+```
+
+#### Detalle — `GET api/categorias.php?id=6`
+
+| Código | Mensaje |
+|---|---|
+| 400 | El id de la categoría no es válido. |
+| 404 | Categoría no encontrada. |
+
+#### Crear — `POST api/categorias.php`
+
+Requiere sesión de tipo `administrador`. Cuerpo (JSON):
+
+| Campo | Tipo | Obligatorio | Regla |
 |---|---|---|---|
-| `api/categorias.php` | Listar, detalle, crear, actualizar, eliminar | Lectura pública · escritura administrador | `Feature/categoria-api` |
-| `api/resenas.php` | Listar por libro, crear, editar, eliminar | Lectura pública · escritura cliente | `Feature/resena-api` |
-| `api/wishlist.php` | Mi lista, agregar, quitar | Cliente | `Feature/wishlist-api` |
-| `api/usuarios.php` | Perfil propio, listado y gestión (admin) | Cliente · administrador | `Feature/usuario-api` |
+| `nombre` | string | Sí | No vacío; único (`uq_categorias_nombre`) |
+| `descripcion` | string | No | — |
 
-### Referencia: campos de un libro en la BD (tabla `productos`)
+Respuesta `201`: `{ "exito": true, "mensaje": "Categoría creada correctamente.", "datos": { "id_categoria": 13 } }`
 
-`id_producto`, `id_categoria`, `nombre` (título), `autor`, `editorial`, `descripcion_corta`, `descripcion_larga`, `precio`, `cantidad` (stock), `imagen`, `fecha_publicacion`, `estado` (`activo`/`inactivo`).
+| Código | Mensaje |
+|---|---|
+| 400 | El nombre de la categoría es obligatorio. |
+| 401/403 | Debe iniciar sesión / No tiene permisos de administrador para realizar esta acción. |
+| 409 | Ya existe una categoría con ese nombre. |
 
-Regla acordada para el carrito: el frontend envía solo `id_producto` y `cantidad` al crear un pedido; el servidor calcula precios y total.
+#### Actualizar — `PUT api/categorias.php?id=6`
+
+Requiere sesión de tipo `administrador`. Mismo cuerpo que `crear`.
+
+Respuesta `200`: `{ "exito": true, "mensaje": "Categoría actualizada correctamente.", "datos": null }`
+
+Mismos códigos que `crear`, más `404 Categoría no encontrada.`
+
+#### Eliminar — `DELETE api/categorias.php?id=6`
+
+Requiere sesión de tipo `administrador`. Si la categoría tiene libros asociados, la FK `RESTRICT` de `productos` impide el borrado.
+
+Respuesta `200`: `{ "exito": true, "mensaje": "Categoría eliminada correctamente.", "datos": null }`
+
+| Código | Mensaje |
+|---|---|
+| 400 | El id de la categoría no es válido. |
+| 404 | Categoría no encontrada. |
+| 409 | No se puede eliminar: hay libros asociados a esta categoría. |
+
+---
+
+### `api/wishlist.php` ✅
+
+Controlador: `app/controladores/WishlistController.php` · Modelos: `app/modelos/Wishlist.php` y `app/modelos/Libro.php` (para validar el libro antes de agregarlo).
+
+**Requiere sesión en todas sus acciones** (`FiltroAutenticacion::protegerApi()`).
+
+| Método | Acceso | Descripción |
+|---|---|---|
+| `GET` | Cliente | Mi lista de deseos |
+| `POST` | Cliente | Agregar un libro a la lista |
+| `DELETE` con `?id_producto=` | Cliente | Quitar un libro de la lista |
+
+#### Mi lista — `GET api/wishlist.php`
+
+Respuesta `200`:
+
+```json
+{
+  "exito": true,
+  "mensaje": "Lista de deseos obtenida correctamente.",
+  "datos": [
+    { "id_wishlist": 4, "id_usuario": 2, "id_producto": 5, "fecha_agregado": "2026-09-20 12:00:00",
+      "nombre": "Dune", "autor": "Frank Herbert", "precio": "210.00", "imagen": null }
+  ]
+}
+```
+
+#### Agregar — `POST api/wishlist.php`
+
+Cuerpo: `{ "id_producto": 5 }`
+
+Respuesta `201`: `{ "exito": true, "mensaje": "Libro agregado a la lista de deseos.", "datos": { "id_wishlist": 9 } }`
+
+| Código | Mensaje |
+|---|---|
+| 400 | Debe indicar un id_producto válido. |
+| 400 | El libro no está disponible. |
+| 401 | Debe iniciar sesión para acceder a este recurso. |
+| 409 | Este libro ya está en tu lista de deseos. |
+
+#### Quitar — `DELETE api/wishlist.php?id_producto=5`
+
+Se identifica por `id_producto` (no por `id_wishlist`), porque es el dato que el frontend normalmente tiene a mano en catálogo/detalle.
+
+Respuesta `200`: `{ "exito": true, "mensaje": "Libro eliminado de la lista de deseos.", "datos": null }`
+
+| Código | Mensaje |
+|---|---|
+| 400 | Debe indicar un id_producto válido. |
+| 401 | Debe iniciar sesión para acceder a este recurso. |
+
+---
+
+### `api/resenas.php` ✅
+
+Controlador: `app/controladores/ResenaController.php` · Modelos: `app/modelos/Resena.php` y `app/modelos/Libro.php`.
+
+| Método | Acceso | Descripción |
+|---|---|---|
+| `GET` con `?id_producto=` | Público | Reseñas de un libro |
+| `POST` | Cliente | Crea una reseña |
+| `PUT` con `?id=` | Cliente (dueño) | Edita su propia reseña |
+| `DELETE` con `?id=` | Cliente (dueño) / administrador | Elimina una reseña |
+
+#### Listado por libro — `GET api/resenas.php?id_producto=5`
+
+Respuesta `200`:
+
+```json
+{
+  "exito": true,
+  "mensaje": "Reseñas obtenidas correctamente.",
+  "datos": [
+    { "id_resena": 3, "id_usuario": 2, "id_producto": 5, "calificacion": 5,
+      "comentario": "Excelente libro", "fecha": "2026-09-18 09:00:00",
+      "nombre": "Ana", "apellido": "Morales" }
+  ]
+}
+```
+
+| Código | Mensaje |
+|---|---|
+| 400 | Debe indicar un id_producto válido. |
+
+#### Crear — `POST api/resenas.php`
+
+Requiere sesión. Cuerpo:
+
+| Campo | Tipo | Obligatorio | Regla |
+|---|---|---|---|
+| `id_producto` | int | Sí | Debe existir y estar `activo` |
+| `calificacion` | int | Sí | Entero entre 1 y 5 |
+| `comentario` | string | No | — |
+
+Respuesta `201`: `{ "exito": true, "mensaje": "Reseña creada correctamente.", "datos": { "id_resena": 11 } }`
+
+| Código | Mensaje |
+|---|---|
+| 400 | Debe indicar un id_producto válido. |
+| 400 | La calificación debe ser un número entero entre 1 y 5. |
+| 400 | El libro no está disponible. |
+| 401 | Debe iniciar sesión para acceder a este recurso. |
+
+**Nota:** no se exige que el usuario haya comprado el libro para reseñarlo — regla marcada como "por confirmar" en el backlog original; queda abierta para una futura iteración.
+
+#### Actualizar — `PUT api/resenas.php?id=11`
+
+Requiere sesión y ser el dueño de la reseña. Mismo cuerpo (`calificacion`, `comentario`) que `crear`, sin `id_producto`.
+
+Respuesta `200`: `{ "exito": true, "mensaje": "Reseña actualizada correctamente.", "datos": null }`
+
+| Código | Mensaje |
+|---|---|
+| 400 | El id de la reseña no es válido. |
+| 400 | La calificación debe ser un número entero entre 1 y 5. |
+| 403 | No tiene permisos para editar esta reseña. |
+| 404 | Reseña no encontrada. |
+
+#### Eliminar — `DELETE api/resenas.php?id=11`
+
+Requiere sesión. El dueño puede eliminar la suya; un administrador puede eliminar cualquiera (moderación de contenido).
+
+Respuesta `200`: `{ "exito": true, "mensaje": "Reseña eliminada correctamente.", "datos": null }`
+
+| Código | Mensaje |
+|---|---|
+| 400 | El id de la reseña no es válido. |
+| 403 | No tiene permisos para eliminar esta reseña. |
+| 404 | Reseña no encontrada. |
+
+---
+
+### `api/usuarios.php` ✅
+
+Controlador: `app/controladores/UsuarioController.php` · Modelo: `app/modelos/Usuario.php`.
+
+**No maneja correo, contraseña ni `tipo_usuario`** — cambiarlos queda fuera de alcance (junto con RF03, recuperar contraseña).
+
+| Método | `accion` | Acceso | Descripción |
+|---|---|---|---|
+| `GET` | *(ninguna)* | Cliente / admin | Perfil propio |
+| `GET` | `admin-listado` | Administrador | Listado completo de usuarios |
+| `GET` con `?id=` | *(ninguna)* | Administrador | Un usuario puntual |
+| `PUT` | *(ninguna)* | Cliente / admin | Actualiza el perfil propio |
+| `PUT` con `?id=` | *(ninguna)* | Administrador | Actualiza el perfil de cualquier usuario |
+| `DELETE` con `?id=` | *(ninguna)* | Administrador | Elimina un usuario |
+
+#### Perfil propio — `GET api/usuarios.php`
+
+Requiere sesión. Respuesta `200`: el usuario (sin `password`), igual forma que `Usuario::obtenerPorId()`.
+
+#### Actualizar perfil propio — `PUT api/usuarios.php`
+
+Requiere sesión. Cuerpo:
+
+| Campo | Tipo | Obligatorio | Regla |
+|---|---|---|---|
+| `nombre` | string | Sí | No vacío |
+| `apellido` | string | Sí | No vacío |
+| `telefono` | string | No | — |
+| `direccion` | string | No | — |
+
+Respuesta `200`: `{ "exito": true, "mensaje": "Perfil actualizado correctamente.", "datos": null }`
+
+| Código | Mensaje |
+|---|---|
+| 400 | Nombre y apellido son obligatorios. |
+| 401 | Debe iniciar sesión para acceder a este recurso. |
+
+#### Listado administrativo — `GET api/usuarios.php?accion=admin-listado`
+
+Requiere sesión de tipo `administrador`.
+
+| Código | Mensaje |
+|---|---|
+| 403 | No tiene permisos de administrador para realizar esta acción. |
+
+#### Detalle administrativo — `GET api/usuarios.php?id=3`
+
+Requiere sesión de tipo `administrador`.
+
+| Código | Mensaje |
+|---|---|
+| 400 | El id del usuario no es válido. |
+| 404 | Usuario no encontrado. |
+
+#### Actualizar (admin) — `PUT api/usuarios.php?id=3`
+
+Requiere sesión de tipo `administrador`. Mismo cuerpo que la actualización de perfil propio.
+
+Respuesta `200`: `{ "exito": true, "mensaje": "Usuario actualizado correctamente.", "datos": null }`
+
+Mismos códigos que el perfil propio, más `404 Usuario no encontrado.`
+
+#### Eliminar — `DELETE api/usuarios.php?id=3`
+
+Requiere sesión de tipo `administrador`. No permite que un administrador elimine su propia cuenta. Un usuario con pedidos registrados no se puede eliminar (FK `RESTRICT` de `pedidos` hacia `usuarios`); sus reseñas y wishlist sí se eliminarían en cascada si la operación fuera posible.
+
+Respuesta `200`: `{ "exito": true, "mensaje": "Usuario eliminado correctamente.", "datos": null }`
+
+| Código | Mensaje |
+|---|---|
+| 400 | El id del usuario no es válido. |
+| 400 | No puede eliminar su propia cuenta desde este panel. |
+| 404 | Usuario no encontrado. |
+| 409 | No se puede eliminar: el usuario tiene pedidos registrados. |
+
+---
+
+## 3. Fuera de alcance
+
+| Funcionalidad | Motivo |
+|---|---|
+| RF03 — Recuperar contraseña | Decisión del equipo: queda fuera de alcance del proyecto |
+| RF20 — Confirmación de pedido por correo | Decisión del equipo: solo se implementa la confirmación en pantalla (ya cubierta por la respuesta de `POST api/pedidos.php`); el envío de correo queda fuera de alcance |
+
+Con esto, **todos los endpoints planeados originalmente en el Product Backlog están implementados**; no queda ningún endpoint en estado 📝.
 
 ---
 
@@ -450,8 +733,13 @@ Regla acordada para el carrito: el frontend envía solo `id_producto` y `cantida
 |---|---|---|
 | 24/09/2026 | `api/auth.php` | Documentado (`registro`, `login`, `logout`, `verificar-sesion`) |
 | 24/09/2026 | `api/libros.php` | Documentado: catálogo con búsqueda/filtros, detalle, crear, actualizar, dar de baja (soft delete), reactivar y listado admin |
-| 24/09/2026 | *(general)* | Agregado `includes/filtros/FiltroAutenticacion.php`: convención de 401 (sin sesión) / 403 (sin rol admin) para futuros endpoints protegidos
+| 24/09/2026 | *(general)* | Agregado `includes/filtros/FiltroAutenticacion.php`: convención de 401 (sin sesión) / 403 (sin rol admin) para futuros endpoints protegidos |
 | 25/09/2026 | `api/pedidos.php` | Documentado: creación transaccional desde el carrito, historial propio, listado admin, detalle con líneas, cambio de estado |
+| 26/09/2026 | `api/categorias.php` | Documentado: listado y detalle públicos, CRUD administrador con manejo de FK `RESTRICT` |
+| 26/09/2026 | `api/wishlist.php` | Documentado: mi lista, agregar, quitar por `id_producto` |
+| 26/09/2026 | `api/resenas.php` | Documentado: listado por libro, crear, editar (dueño), eliminar (dueño o admin) |
+| 26/09/2026 | `api/usuarios.php` | Documentado: perfil propio, gestión administrativa (listado, detalle, editar, eliminar) |
+| 26/09/2026 | *(general)* | RF03 y confirmación de pedido por correo (parte de RF20) marcados como fuera de alcance del proyecto |
 
 ---
 
@@ -466,4 +754,3 @@ Respuesta 200/201: ejemplo real con datos del seed
 Errores: código | mensaje
 Notas: reglas de negocio relevantes para el frontend
 ```
-
