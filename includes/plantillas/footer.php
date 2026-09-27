@@ -35,19 +35,15 @@ $rutaBase = $rutaBase ?? '';
   </div>
 </footer>
 
-<!-- Orden: Bootstrap -> api.js -> scripts de la vista -->
+<!-- Orden: Bootstrap -> api.js -> auth.js -> carrito.js -> scripts de la vista -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="<?= $rutaBase ?>assets/js/api.js"></script>
+<script src="<?= $rutaBase ?>assets/js/auth.js"></script>
+<script src="<?= $rutaBase ?>assets/js/carrito.js"></script>
 <?php if (!empty($scriptsPagina)): ?>
   <?php foreach ($scriptsPagina as $script): ?>
 <script src="<?= $rutaBase ?>assets/js/<?= htmlspecialchars($script) ?>"></script>
   <?php endforeach; ?>
 <?php endif; ?>
-
-<!--
-  AVISO: descomentar esta línea cuando exista assets/js/auth.js (Feature/frontend-auth).
-  Ese script es el que mostrará/ocultará #zonaSesionInvitado y #zonaSesionUsuario,
-  y conectará el botón #btnCerrarSesion del header.
-  <script src="<?= $rutaBase ?>assets/js/auth.js"></script>
--->
 </body>
 </html>
