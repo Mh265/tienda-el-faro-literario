@@ -275,3 +275,24 @@ main {
   object-fit: cover;
   border-radius: 0.25rem;
 }
+
+/* ===== DETALLE DE LIBRO Y RESEÑAS — Feature/frontend-detalle-libro ===== */
+.tarjeta-descripcion {
+  background-color: #fff;
+  border: 1px solid rgba(43, 43, 43, 0.1);
+  border-radius: 0.75rem;
+}
+.chip-ficha {
+  background-color: var(--faro-papel);
+  border-radius: 0.5rem;
+  border: 1px solid rgba(43, 43, 43, 0.08);
+}
+.tarjeta-resena {
+  background-color: #fff;
+  border: 1px solid rgba(43, 43, 43, 0.1);
+  border-radius: 0.5rem;
+}
+.texto-estrellas {
+  color: var(--faro-dorado);
+  letter-spacing: 1px;
+}
