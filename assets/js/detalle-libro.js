@@ -1,6 +1,7 @@
-// assets/js/detalle-libro.js
 let idProductoActual = null;
 let usuarioEnSesion = null;
+let libroActual = null;
+let miResenaActual = null; // reseña del usuario en sesión para este libro (si ya escribió una)
 
 document.addEventListener('DOMContentLoaded', async () => {
   idProductoActual = new URLSearchParams(window.location.search).get('id');
@@ -38,8 +39,8 @@ async function cargarDetalleLibro() {
   }
 
   const libro = resultado.datos;
+  libroActual = libro; // usado por manejarAgregarCarrito
   document.title = `${libro.nombre} | El Faro Literario`;
-  window.libroActual = libro; // usado por manejarAgregarCarrito y manejarToggleWishlist
 
   const rutaBase = API_URL.replace(/api\/$/, '');
   const portada = libro.imagen
@@ -62,6 +63,7 @@ async function cargarDetalleLibro() {
 
   const inputCantidad = document.getElementById('cantidadDetalle');
   inputCantidad.max = libro.cantidad;
+  inputCantidad.disabled = sinStock;
   document.getElementById('btnAgregarCarritoDetalle').disabled = sinStock;
 
   // Ficha técnica
@@ -96,16 +98,35 @@ function mostrarErrorDetalle(mensaje) {
   zonaEstado.textContent = mensaje;
 }
 
-function manejarAgregarCarrito() {
-  const cantidad = parseInt(document.getElementById('cantidadDetalle').value, 10) || 1;
-  agregarAlCarrito(window.libroActual, cantidad); // definido en carrito.js (global)
-
+// Pinta una alerta bajo los botones de acción. Texto siempre con textContent.
+function mostrarMensajeAcciones(tipo, texto) {
   const zonaMensaje = document.getElementById('mensajeAccionesDetalle');
   zonaMensaje.innerHTML = '';
   const alerta = document.createElement('div');
-  alerta.className = 'alert alert-success mt-2 mb-0 py-2';
-  alerta.textContent = 'Agregado al carrito.';
+  alerta.className = `alert alert-${tipo} mt-2 mb-0 py-2`;
+  alerta.textContent = texto;
   zonaMensaje.appendChild(alerta);
+}
+
+function manejarAgregarCarrito() {
+  const inputCantidad = document.getElementById('cantidadDetalle');
+  const stock = Number(libroActual.cantidad);
+
+  // El atributo max del input no impide escribir un número mayor: se valida aquí.
+  let cantidad = parseInt(inputCantidad.value, 10);
+  if (isNaN(cantidad) || cantidad < 1) cantidad = 1;
+  if (cantidad > stock) cantidad = stock;
+  inputCantidad.value = cantidad;
+
+  // agregarAlCarrito está en carrito.js (global). El tercer parámetro es el
+  // stock, para que el carrito también pueda poner su tope.
+  const resultado = agregarAlCarrito(libroActual, cantidad, stock);
+
+  if (resultado.limitadoPorStock) {
+    mostrarMensajeAcciones('warning', `Solo hay ${stock} disponibles: tu carrito quedó con ${resultado.cantidadEnCarrito}.`);
+  } else {
+    mostrarMensajeAcciones('success', 'Agregado al carrito.');
+  }
 }
 
 // api/wishlist.php → app/controladores/WishlistController.php
@@ -117,7 +138,7 @@ async function sincronizarBotonWishlist() {
   const resultado = await llamarApi('wishlist.php', 'GET');
   if (!resultado.exito) return;
 
-  const yaEstaEnWishlist = resultado.datos.some((item) => item.id_producto === Number(idProductoActual));
+  const yaEstaEnWishlist = resultado.datos.some((item) => Number(item.id_producto) === Number(idProductoActual));
   actualizarTextoBotonWishlist(yaEstaEnWishlist);
 }
 
@@ -143,6 +164,8 @@ async function manejarToggleWishlist() {
 
   if (resultado.exito) {
     actualizarTextoBotonWishlist(!yaActivo);
+  } else {
+    mostrarMensajeAcciones('danger', resultado.mensaje);
   }
 }
 
@@ -150,6 +173,12 @@ async function manejarToggleWishlist() {
 async function cargarResenas() {
   const zonaEstado = document.getElementById('zonaEstadoResenas');
   const lista = document.getElementById('listaResenas');
+  const promedio = document.getElementById('promedioResenas');
+
+  // Siempre se repinta desde cero: así sirve tanto la carga inicial como
+  // después de publicar, editar o eliminar una reseña.
+  lista.innerHTML = '';
+  promedio.textContent = '';
 
   const resultado = await llamarApi(`resenas.php?id_producto=${idProductoActual}`, 'GET');
 
@@ -166,20 +195,19 @@ async function cargarResenas() {
     zonaEstado.textContent = 'Este libro todavía no tiene reseñas. ¡Sé el primero en opinar!';
   } else {
     zonaEstado.classList.add('d-none');
-    const promedio = resenas.reduce((total, r) => total + r.calificacion, 0) / resenas.length;
-    document.getElementById('promedioResenas').textContent = `${promedio.toFixed(1)} / 5 (${resenas.length} reseña${resenas.length === 1 ? '' : 's'})`;
+    const suma = resenas.reduce((total, r) => total + Number(r.calificacion), 0);
+    promedio.textContent = `${(suma / resenas.length).toFixed(1)} / 5 (${resenas.length} reseña${resenas.length === 1 ? '' : 's'})`;
     resenas.forEach((resena) => lista.appendChild(crearTarjetaResena(resena)));
   }
 
-  // Mostrar el formulario solo si hay sesión activa.
-  if (usuarioEnSesion) {
-    document.getElementById('formularioResenaContenedor').classList.remove('d-none');
-  } else {
-    document.getElementById('avisoLoginResena').classList.remove('d-none');
-  }
+  prepararFormularioResena(resenas);
 }
 
 function crearTarjetaResena(resena) {
+  const calificacion = Number(resena.calificacion);
+  const esDuena = usuarioEnSesion && Number(resena.id_usuario) === Number(usuarioEnSesion.id_usuario);
+  const esAdmin = usuarioEnSesion && usuarioEnSesion.tipo_usuario === 'administrador';
+
   const tarjeta = document.createElement('div');
   tarjeta.className = 'tarjeta-resena p-3';
 
@@ -192,8 +220,8 @@ function crearTarjetaResena(resena) {
 
   const estrellas = document.createElement('span');
   estrellas.className = 'texto-estrellas';
-  estrellas.textContent = '★'.repeat(resena.calificacion) + '☆'.repeat(5 - resena.calificacion);
-  estrellas.setAttribute('aria-label', `${resena.calificacion} de 5 estrellas`);
+  estrellas.textContent = '★'.repeat(calificacion) + '☆'.repeat(5 - calificacion);
+  estrellas.setAttribute('aria-label', `${calificacion} de 5 estrellas`);
 
   encabezado.append(autor, estrellas);
 
@@ -206,21 +234,65 @@ function crearTarjetaResena(resena) {
   comentario.textContent = resena.comentario || '';
 
   tarjeta.append(encabezado, fecha, comentario);
+
+  // El dueño elimina la suya; un administrador puede eliminar cualquiera
+  // (moderación). El servidor lo valida igual: esto es solo lo visible.
+  if (esDuena || esAdmin) {
+    const btnEliminar = document.createElement('button');
+    btnEliminar.type = 'button';
+    btnEliminar.className = 'btn btn-sm btn-outline-danger mt-2';
+    btnEliminar.textContent = esDuena ? 'Eliminar mi reseña' : 'Eliminar (moderación)';
+    btnEliminar.addEventListener('click', () => eliminarResena(resena.id_resena));
+    tarjeta.appendChild(btnEliminar);
+  }
+
   return tarjeta;
 }
 
-// api/resenas.php → app/controladores/ResenaController.php
+// Muestra el formulario solo con sesión activa. Si el usuario ya reseñó este
+// libro, el mismo formulario pasa a "editar" (precargado) en vez de crear otra.
+function prepararFormularioResena(resenas) {
+  const contenedor = document.getElementById('formularioResenaContenedor');
+  const aviso = document.getElementById('avisoLoginResena');
+
+  if (!usuarioEnSesion) {
+    contenedor.classList.add('d-none');
+    aviso.classList.remove('d-none');
+    return;
+  }
+
+  aviso.classList.add('d-none');
+  contenedor.classList.remove('d-none');
+
+  miResenaActual = resenas.find((r) => Number(r.id_usuario) === Number(usuarioEnSesion.id_usuario)) || null;
+
+  const formulario = document.getElementById('formResena');
+  const titulo = document.getElementById('tituloFormResena');
+  const boton = document.getElementById('btnPublicarResena');
+
+  if (miResenaActual) {
+    titulo.textContent = 'Editar tu reseña';
+    boton.textContent = 'Guardar cambios';
+    formulario.calificacion.value = miResenaActual.calificacion;
+    formulario.comentario.value = miResenaActual.comentario || '';
+  } else {
+    titulo.textContent = 'Deja tu reseña';
+    boton.textContent = 'Publicar reseña';
+    formulario.reset();
+  }
+}
+
+// api/resenas.php → app/controladores/ResenaController.php (POST crea, PUT edita)
 async function manejarSubmitResena(evento) {
   evento.preventDefault();
   const formulario = evento.target;
 
-  const datos = {
-    id_producto: Number(idProductoActual),
-    calificacion: Number(formulario.calificacion.value),
-    comentario: formulario.comentario.value.trim() || null
-  };
+  const calificacion = Number(formulario.calificacion.value);
+  const comentario = formulario.comentario.value.trim() || null;
 
-  const resultado = await llamarApi('resenas.php', 'POST', datos);
+  const resultado = miResenaActual
+    ? await llamarApi(`resenas.php?id=${miResenaActual.id_resena}`, 'PUT', { calificacion, comentario })
+    : await llamarApi('resenas.php', 'POST', { id_producto: Number(idProductoActual), calificacion, comentario });
 
   const zonaMensaje = document.getElementById('mensajeResena');
   zonaMensaje.innerHTML = '';
@@ -230,8 +302,24 @@ async function manejarSubmitResena(evento) {
   zonaMensaje.appendChild(alerta);
 
   if (resultado.exito) {
-    formulario.reset();
-    document.getElementById('listaResenas').innerHTML = '';
-    cargarResenas();
+    await cargarResenas();
+  }
+}
+
+// api/resenas.php?id=# → app/controladores/ResenaController.php
+async function eliminarResena(idResena) {
+  if (!confirm('¿Eliminar esta reseña? Esto no se puede deshacer.')) return;
+
+  const resultado = await llamarApi(`resenas.php?id=${idResena}`, 'DELETE');
+
+  const zonaMensaje = document.getElementById('mensajeResena');
+  zonaMensaje.innerHTML = '';
+  const alerta = document.createElement('div');
+  alerta.className = `alert ${resultado.exito ? 'alert-success' : 'alert-danger'} mb-0`;
+  alerta.textContent = resultado.mensaje;
+  zonaMensaje.appendChild(alerta);
+
+  if (resultado.exito) {
+    await cargarResenas();
   }
 }
