@@ -1,7 +1,7 @@
 // assets/js/inicio.js
 document.addEventListener('DOMContentLoaded', () => {
   cargarDestacados();
-  actualizarContadorCarrito(); // definido en carrito.js, cargado globalmente desde footer.php
+  actualizarContadorCarrito();
 });
 
 // api/libros.php → app/controladores/LibroController.php
@@ -17,7 +17,7 @@ async function cargarDestacados() {
     return;
   }
 
-  // Máximo 4 en inicio; el catálogo completo con filtros vive en catalogo.php.
+  // Mostrar máximo 4 destacados.
   const destacados = resultado.datos.slice(0, 4);
   const rutaBase = API_URL.replace(/api\/$/, '');
 

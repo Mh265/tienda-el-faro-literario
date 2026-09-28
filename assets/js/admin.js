@@ -1,11 +1,4 @@
-// assets/js/admin.js
-/**
- * Lógica del panel de administración: dashboard, libros, categorías,
- * pedidos y usuarios. Este archivo se carga en las 5 vistas de
- * public/vistas/admin/; cada sección se activa sola si encuentra sus
- * elementos en la página actual — el mismo "guardia de puerta" que usa
- * carrito.js: revisa si le toca actuar antes de hacer nada.
- */
+// Panel de administración.
 document.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('statLibros')) inicializarDashboard();
   if (document.getElementById('tablaLibrosAdmin')) inicializarLibrosAdmin();
@@ -21,6 +14,11 @@ const CLASES_ESTADO_PEDIDO = {
   entregado: 'text-bg-success',
   cancelado: 'text-bg-danger'
 };
+
+// Limpia el mensaje del modal.
+function limpiarMensajeModal(idZona) {
+  document.getElementById(idZona).innerHTML = '';
+}
 
 // ==========================================================
 // DASHBOARD (admin/index.php)
@@ -42,7 +40,8 @@ async function inicializarDashboard() {
     return;
   }
 
-  document.getElementById('statLibros').textContent = resLibros.datos.length;
+  // "Libros en catálogo" = solo los activos (el listado admin trae también los dados de baja).
+  document.getElementById('statLibros').textContent = resLibros.datos.filter((libro) => libro.estado === 'activo').length;
   document.getElementById('statUsuarios').textContent = resUsuarios.datos.length;
 
   // No hay endpoint de estadísticas: se calcula aquí con lo que ya
@@ -87,6 +86,7 @@ function inicializarLibrosAdmin() {
     document.getElementById('formLibro').reset();
     document.getElementById('idLibroEditar').value = '';
     document.getElementById('tituloModalLibro').textContent = 'Nuevo libro';
+    limpiarMensajeModal('mensajeFormLibro');
   });
 
   document.getElementById('formLibro').addEventListener('submit', manejarSubmitLibro);
@@ -183,6 +183,8 @@ function crearFilaLibroAdmin(libro, rutaBase) {
 }
 
 function abrirModalEdicionLibro(libro) {
+  limpiarMensajeModal('mensajeFormLibro');
+
   document.getElementById('tituloModalLibro').textContent = 'Editar libro';
   document.getElementById('idLibroEditar').value = libro.id_producto;
   document.getElementById('categoriaLibro').value = libro.id_categoria;
@@ -208,7 +210,8 @@ async function manejarSubmitLibro(evento) {
   let resultado;
 
   if (idLibro) {
-    // PUT (actualizar) no acepta portada, así que va como JSON normal.
+    // PUT (actualizar) no acepta portada nueva, así que va como JSON normal.
+    // Libro::actualizar() no toca la columna `imagen`: la portada se conserva.
     const datos = {
       id_categoria: formulario.id_categoria.value,
       nombre: formulario.nombre.value.trim(),
@@ -256,7 +259,11 @@ async function alternarEstadoLibro(libro) {
     ? await llamarApi(`libros.php?id=${libro.id_producto}`, 'DELETE')
     : await llamarApi(`libros.php?id=${libro.id_producto}&accion=reactivar`, 'PUT');
 
-  if (resultado.exito) cargarLibrosAdmin();
+  if (resultado.exito) {
+    cargarLibrosAdmin();
+  } else {
+    alert(resultado.mensaje);
+  }
 }
 
 function filtrarTablaLibros(evento) {
@@ -277,6 +284,7 @@ function inicializarCategoriasAdmin() {
     document.getElementById('formCategoria').reset();
     document.getElementById('idCategoriaEditar').value = '';
     document.getElementById('tituloModalCategoria').textContent = 'Nueva categoría';
+    limpiarMensajeModal('mensajeFormCategoria');
   });
 
   document.getElementById('formCategoria').addEventListener('submit', manejarSubmitCategoria);
@@ -319,6 +327,7 @@ function crearFilaCategoriaAdmin(categoria) {
   btnEditar.className = 'btn btn-sm btn-outline-primary me-1';
   btnEditar.textContent = 'Editar';
   btnEditar.addEventListener('click', () => {
+    limpiarMensajeModal('mensajeFormCategoria');
     document.getElementById('tituloModalCategoria').textContent = 'Editar categoría';
     document.getElementById('idCategoriaEditar').value = categoria.id_categoria;
     document.getElementById('nombreCategoria').value = categoria.nombre;
@@ -385,6 +394,7 @@ function inicializarPedidosAdmin() {
 }
 
 // api/pedidos.php?accion=admin-listado → app/controladores/PedidoController.php
+// api/usuarios.php?accion=admin-listado → app/controladores/UsuarioController.php
 async function cargarPedidosAdmin() {
   const zonaEstado = document.getElementById('zonaEstadoPedidosAdmin');
   const tabla = document.getElementById('tablaPedidosAdmin');
@@ -392,28 +402,40 @@ async function cargarPedidosAdmin() {
   zonaEstado.classList.remove('d-none');
   zonaEstado.textContent = 'Cargando pedidos...';
 
-  const resultado = await llamarApi('pedidos.php?accion=admin-listado', 'GET');
+  // Pedido::obtenerTodos() no hace JOIN a usuarios (solo trae id_usuario), así
+  // que los nombres se resuelven aquí con el listado de usuarios, sin pedirle
+  // ningún cambio al backend.
+  const [resultado, resUsuarios] = await Promise.all([
+    llamarApi('pedidos.php?accion=admin-listado', 'GET'),
+    llamarApi('usuarios.php?accion=admin-listado', 'GET')
+  ]);
 
   if (!resultado.exito) {
     zonaEstado.textContent = resultado.mensaje;
     return;
   }
 
+  const nombresPorId = {};
+  if (resUsuarios.exito) {
+    resUsuarios.datos.forEach((usuario) => {
+      nombresPorId[usuario.id_usuario] = `${usuario.nombre} ${usuario.apellido}`;
+    });
+  }
+
   zonaEstado.classList.add('d-none');
   tabla.innerHTML = '';
-  resultado.datos.forEach((pedido) => tabla.appendChild(crearFilaPedidoAdmin(pedido)));
+  resultado.datos.forEach((pedido) => tabla.appendChild(crearFilaPedidoAdmin(pedido, nombresPorId)));
 }
 
-function crearFilaPedidoAdmin(pedido) {
+function crearFilaPedidoAdmin(pedido, nombresPorId) {
   const fila = document.createElement('tr');
 
   const celdaId = document.createElement('td');
   celdaId.textContent = `#${pedido.id_pedido}`;
 
-  // pedidos.php no trae nombre de usuario (Pedido::obtenerTodos() no hace
-  // JOIN a usuarios), solo el id_usuario. Ver pregunta abierta al final.
+  // Si el listado de usuarios no cargó, se muestra el id como respaldo.
   const celdaUsuario = document.createElement('td');
-  celdaUsuario.textContent = `Usuario #${pedido.id_usuario}`;
+  celdaUsuario.textContent = nombresPorId[pedido.id_usuario] || `Usuario #${pedido.id_usuario}`;
 
   const celdaFecha = document.createElement('td');
   celdaFecha.textContent = new Date(pedido.fecha).toLocaleDateString('es-GT');
@@ -424,6 +446,7 @@ function crearFilaPedidoAdmin(pedido) {
   const celdaEstado = document.createElement('td');
   const select = document.createElement('select');
   select.className = 'form-select form-select-sm';
+  select.setAttribute('aria-label', `Estado del pedido ${pedido.id_pedido}`);
   Object.keys(CLASES_ESTADO_PEDIDO).forEach((estado) => {
     const opcion = document.createElement('option');
     opcion.value = estado;
@@ -540,6 +563,7 @@ function crearFilaUsuarioAdmin(usuario) {
   btnEditar.className = 'btn btn-sm btn-outline-primary me-1';
   btnEditar.textContent = 'Editar';
   btnEditar.addEventListener('click', () => {
+    limpiarMensajeModal('mensajeFormUsuario');
     document.getElementById('idUsuarioEditar').value = usuario.id_usuario;
     document.getElementById('nombreUsuarioAdmin').value = usuario.nombre;
     document.getElementById('apellidoUsuarioAdmin').value = usuario.apellido;

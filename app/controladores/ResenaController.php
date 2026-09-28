@@ -1,11 +1,8 @@
 <?php
-/**
- * Controlador de reseñas. Usa los Modelos Resena.php y Libro.php (para
- * validar que el libro exista antes de reseñarlo).
- */
+// Controlador de reseñas.
 class ResenaController
 {
-    // GET /api/resenas.php?id_producto=# -> reseñas de un libro. Público.
+    // Listado público por producto.
     public static function listarPorProducto($id_producto)
     {
         if (!ctype_digit((string) $id_producto)) {
@@ -40,10 +37,22 @@ class ResenaController
             Respuesta::error('El libro no está disponible.', 400);
         }
 
-        $idUsuario = AyudanteSesion::obtenerUsuarioSesion()['id_usuario'];
+            $idUsuario = AyudanteSesion::obtenerUsuarioSesion()['id_usuario'];
 
+        // Una sola reseña por usuario y libro: si ya existe, se pide editarla.
         // app/modelos/Resena.php
-        $idResena = Resena::crear($idUsuario, $idProducto, (int) $calificacion, $comentario);
+        if (Resena::obtenerPorUsuarioYProducto($idUsuario, $idProducto)) {
+            Respuesta::error('Ya escribiste una reseña para este libro. Edítala en lugar de crear otra.', 409);
+        }
+
+        try {
+            // app/modelos/Resena.php
+            $idResena = Resena::crear($idUsuario, $idProducto, (int) $calificacion, $comentario);
+        } catch (PDOException $e) {
+            // uq_resenas_usuario_producto: otra petición la creó justo antes.
+            Respuesta::error('Ya escribiste una reseña para este libro. Edítala en lugar de crear otra.', 409);
+        }
+
         Respuesta::exito('Reseña creada correctamente.', ['id_resena' => $idResena], 201);
     }
 

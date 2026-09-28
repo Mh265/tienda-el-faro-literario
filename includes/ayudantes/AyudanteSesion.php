@@ -1,12 +1,8 @@
 <?php
-/**
- * AyudanteSesion.php
- * Ayudante para centralizar el manejo de la sesión nativa de PHP
- */
+// Ayudante para la sesión.
 class AyudanteSesion
 {
-    // session_start() no se puede llamar dos veces en la misma
-    // petición sin generar un warning; por eso se valida el estado.
+    // Inicia la sesión si aún no existe.
     public static function iniciar()
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -14,9 +10,7 @@ class AyudanteSesion
         }
     }
 
-    // Guarda en sesión solo los datos necesarios para identificar al
-    // usuario y decidir permisos (nunca la contraseña, ni siquiera el
-    // hash).
+    // Guarda los datos mínimos del usuario en sesión.
     public static function iniciarSesionUsuario($usuario)
     {
         self::iniciar();
@@ -33,8 +27,7 @@ class AyudanteSesion
         return isset($_SESSION['id_usuario']);
     }
 
-    // Pensado para que FiltroAutenticacion.php (feature futura) lo use
-    // al proteger las rutas exclusivas de app/vistas/admin/.
+    // Verifica si el usuario es administrador.
     public static function esAdministrador()
     {
         self::iniciar();
@@ -56,7 +49,7 @@ class AyudanteSesion
         ];
     }
 
-    // Vacía y destruye la sesión (logout).
+    // Cierra la sesión.
     public static function cerrarSesion()
     {
         self::iniciar();

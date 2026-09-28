@@ -1,9 +1,5 @@
 <?php
-/**
- * BaseDatos.php
- * Clase encargada de abrir la conexión PDO hacia la base de datos
- * de "El Faro Literario".
- */
+// Conexión a la base de datos.
 class BaseDatos
 {
     public static function conectar()

@@ -1,12 +1,8 @@
 <?php
-/**
- * Respuesta.php
- * Ayudante para estandarizar las respuestas JSON que devuelve la API.
- */
+// Ayudante para respuestas JSON.
 class Respuesta
 {
-    // Respuesta de éxito. $datos es opcional (ej. logout no necesita
-    // devolver datos, solo confirmar el mensaje).
+    // Respuesta exitosa.
     public static function exito($mensaje, $datos = null, $codigo = 200)
     {
         http_response_code($codigo);
@@ -19,8 +15,7 @@ class Respuesta
         exit;
     }
 
-    // Respuesta de error. Se corta la ejecución con exit para que el
-    // Controlador no siga corriendo código después de reportar el error.
+    // Respuesta con error.
     public static function error($mensaje, $codigo = 400)
     {
         http_response_code($codigo);

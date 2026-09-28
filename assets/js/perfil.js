@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('formPerfil').addEventListener('submit', manejarSubmitPerfil);
 });
 
-// api/usuarios.php → app/controladores/UsuarioController.php
+// Carga el perfil del usuario.
 async function cargarPerfil() {
   const resultado = await llamarApi('usuarios.php', 'GET');
 
@@ -22,7 +22,7 @@ async function cargarPerfil() {
   document.getElementById('direccionPerfil').value = usuario.direccion || '';
 }
 
-// api/usuarios.php → app/controladores/UsuarioController.php
+// Guarda cambios del perfil.
 async function manejarSubmitPerfil(evento) {
   evento.preventDefault();
   const formulario = evento.target;

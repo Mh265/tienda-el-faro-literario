@@ -123,7 +123,8 @@ CREATE TABLE resenas (
         FOREIGN KEY (id_producto) REFERENCES productos(id_producto)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
-    CONSTRAINT chk_resenas_calificacion CHECK (calificacion BETWEEN 1 AND 5)
+        CONSTRAINT chk_resenas_calificacion CHECK (calificacion BETWEEN 1 AND 5),
+        CONSTRAINT uq_resenas_usuario_producto UNIQUE (id_usuario, id_producto)
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------------------

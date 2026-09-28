@@ -1,11 +1,8 @@
 <?php
-/**
- * Pedido.php
- * Modelo para la tabla `pedidos` (cabecera de cada compra).
- */
+// Modelo de pedidos.
 class Pedido
 {
-    //Devuelve el historial global de todas las compras de la tienda
+    // Historial global.
     public static function obtenerTodos()
     {
         $conexion = BaseDatos::conectar();
@@ -15,7 +12,7 @@ class Pedido
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    //Recupera la información general de una orden específica mediante su ID.
+    // Obtener pedido por ID.
     public static function obtenerPorId($id_pedido)
     {
         $conexion = BaseDatos::conectar();
@@ -26,7 +23,7 @@ class Pedido
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // Consulta adicional, útil para la vista "Mis pedidos" del cliente.
+    // Pedidos del usuario.
     public static function obtenerPorUsuario($id_usuario)
     {
         $conexion = BaseDatos::conectar();
@@ -36,7 +33,7 @@ class Pedido
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    //Registra una nueva compra en la base de datos. Por defecto le asigna el estado 'pendiente'
+    // Crear pedido.
     public static function crear($id_usuario, $total, $estado = 'pendiente', $conexion = null)
     {
         $conexion = $conexion ?? BaseDatos::conectar();
@@ -49,9 +46,7 @@ class Pedido
         return $conexion->lastInsertId();
     }
 
-    // Actualiza total y estado. El cambio de estado (pendiente -> pagado ->
-    // enviado -> entregado / cancelado) se decide en el Controlador; aquí
-    // solo se persiste el valor que ya viene validado.
+    // Actualizar pedido.
     public static function actualizar($id_pedido, $total, $estado)
     {
         $conexion = BaseDatos::conectar();
@@ -63,7 +58,7 @@ class Pedido
         return $stmt->execute();
     }
 
-    //Borra el registro del pedido de la base de datos según su ID.
+    // Eliminar pedido.
     public static function eliminar($id_pedido)
     {
         $conexion = BaseDatos::conectar();

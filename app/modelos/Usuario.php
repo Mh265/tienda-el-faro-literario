@@ -1,12 +1,8 @@
 <?php
-/**
- * Usuario.php
- * Modelo para la tabla `usuarios` (clientes y administradores).
- */
+// Modelo de usuarios.
 class Usuario
 {
-    //Devuelve el listado de todos los usuarios registrados (sin la contraseña), 
-    //ordenados desde el más reciente hasta el más antiguo
+    // Listar usuarios.
     public static function obtenerTodos()
     {
         $conexion = BaseDatos::conectar();
@@ -19,8 +15,7 @@ class Usuario
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    //Retorna la información del perfil de un usuario específico mediante su ID 
-    //(sin incluir la contraseña)
+    // Obtener usuario por ID.
     public static function obtenerPorId($id_usuario)
     {
         $conexion = BaseDatos::conectar();
@@ -34,8 +29,7 @@ class Usuario
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    //Busca un usuario por su dirección de correo electrónico y devuelve la fila completa
-    //Pensada para usarse en el login
+    // Obtener usuario por correo.
     public static function obtenerPorCorreo($correo)
     {
         $conexion = BaseDatos::conectar();
@@ -46,7 +40,7 @@ class Usuario
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    //Registra un nuevo usuario en la base de datos
+    // Crear usuario.
     public static function crear($nombre, $apellido, $correo, $password, $telefono, $direccion, $tipo_usuario = 'cliente')
     {
         $conexion = BaseDatos::conectar();
@@ -64,8 +58,7 @@ class Usuario
         return $conexion->lastInsertId();
     }
 
-    //Actualiza únicamente los datos personales de un usuario
-    //No incluye correo ni tipo de usuario ni contraseña
+    // Actualizar perfil del usuario.
     public static function actualizar($id_usuario, $nombre, $apellido, $telefono, $direccion)
     {
         $conexion = BaseDatos::conectar();
@@ -81,7 +74,7 @@ class Usuario
         return $stmt->execute();
     }
 
-    //Borra permanentemente el registro de un usuario mediante su ID.
+    // Eliminar usuario.
     public static function eliminar($id_usuario)
     {
         $conexion = BaseDatos::conectar();

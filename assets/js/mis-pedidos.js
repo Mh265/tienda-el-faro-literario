@@ -11,7 +11,7 @@ const CLASES_ESTADO_PEDIDO = {
   cancelado: 'text-bg-danger'
 };
 
-// api/pedidos.php → app/controladores/PedidoController.php
+// Carga los pedidos del usuario.
 async function cargarMisPedidos() {
   const zonaEstado = document.getElementById('zonaEstadoPedidos');
   const lista = document.getElementById('listaPedidos');

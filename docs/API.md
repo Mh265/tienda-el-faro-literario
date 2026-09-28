@@ -301,7 +301,7 @@ navegador lo arma solo (con el boundary correcto) al usar `FormData`.
 
 #### Actualizar — `PUT api/libros.php?id=5`
 
-Requiere sesión de tipo `administrador`. Mismo cuerpo y mismas reglas que `crear`. No cambia `estado` (para eso están `reactivar` y el `DELETE`). No permite actualizar la portada (`imagen`) por este medio; ese campo queda intacto.
+Requiere sesión de tipo `administrador`. Mismo cuerpo y mismas reglas que `crear`. No cambia `estado` (para eso están `reactivar` y el `DELETE`). No permite actualizar la portada (`imagen`) por este medio; ese campo queda intacto. Imagen se ignora si viene en el cuerpo.
 
 Respuesta `200`: `{ "exito": true, "mensaje": "Libro actualizado correctamente.", "datos": null }`
 
@@ -610,7 +610,7 @@ Respuesta `201`: `{ "exito": true, "mensaje": "Reseña creada correctamente.", "
 | 400 | El libro no está disponible. |
 | 401 | Debe iniciar sesión para acceder a este recurso. |
 
-**Nota:** no se exige que el usuario haya comprado el libro para reseñarlo — regla marcada como "por confirmar" en el backlog original; queda abierta para una futura iteración.
+**Nota:** cada usuario puede tener una sola reseña por libro (restricción UNIQUE); para cambiarla se usa PUT. No se exige compra previa: regla abierta.
 
 #### Actualizar — `PUT api/resenas.php?id=11`
 

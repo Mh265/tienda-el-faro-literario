@@ -135,20 +135,17 @@ Formato: JSON. El contrato definitivo y completo está en `docs/API.md`. Los nom
 
 | Vista / módulo                | Archivos                                              | Estado |
 |--------------------------------|---------------------------------------------------------|--------|
-| Sistema de estilos y layout   | `variables.css`, `styles.css`, `includes/plantillas/header.php` y `footer.php`, `public/index.php` | ✅ |
-| Cliente de API                | `assets/js/api.js`                                    | ✅     |
-| Registro e inicio de sesión   | `login.php`, `registro.php`, `auth.js`                | ✅     |
-| Catálogo (búsqueda y filtros) | `catalogo.php`, `catalogo.js`                         | ✅ (categorías vía mock; pendiente conectar a `api/categorias.php`, ya disponible) |
-| Detalle de libro              | `detalle-libro.php`, `detalle-libro.js`               | 🔜     |
-| Carrito                       | `carrito.php`, `carrito.js`                           | 🔜     |
-| Checkout y confirmación       | `checkout.php`, `checkout.js`                         | 🔜     |
-| Mis pedidos                   | `mis-pedidos.php`                                     | 🔜     |
-| Reseñas                       | componente en detalle de libro                        | 🔜 (`api/resenas.php` ya disponible) |
-| Lista de deseos               | `wishlist.php`                                        | 🔜 (`api/wishlist.php` ya disponible) |
-| Admin: libros                 | `admin/libros.php`, `admin.js`                        | 🔜     |
-| Admin: categorías             | `admin/categorias.php`                                | 🔜 (`api/categorias.php` ya disponible) |
-| Admin: pedidos                | `admin/pedidos.php`                                   | 🔜     |
-| Admin: usuarios               | `admin/usuarios.php`                                  | 🔜 (`api/usuarios.php` ya disponible) |
+| Sistema de estilos y layout   | `variables.css`, `styles.css`, `header.php`, `footer.php`, `admin-nav.php`, `public/index.php` | ✅ |
+| Cliente de API                | `assets/js/api.js`                                    | ✅ |
+| Registro e inicio de sesión   | `login.php`, `registro.php`, `auth.js`                | ✅ |
+| Catálogo (búsqueda y filtros) | `catalogo.php`, `catalogo.js` (categorías vía `api/categorias.php`) | ✅ |
+| Detalle de libro y reseñas    | `detalle-libro.php`, `detalle-libro.js`               | ✅ |
+| Carrito                       | `carrito.php`, `carrito.js`                           | ✅ |
+| Checkout y confirmación       | `checkout.php`, `checkout.js`                         | ✅ |
+| Mis pedidos                   | `mis-pedidos.php`, `mis-pedidos.js`                   | ✅ |
+| Lista de deseos               | `wishlist.php`, `wishlist.js`                         | ✅ |
+| Perfil                        | `perfil.php`, `perfil.js`                             | ✅ |
+| Admin: dashboard, libros, categorías, pedidos, usuarios | `admin/*.php`, `admin.js`   | ✅ |
 
 ---
 
@@ -162,18 +159,18 @@ Formato: JSON. El contrato definitivo y completo está en `docs/API.md`. Los nom
 | RF04 | Catálogo de libros                     | Público  | Alta      | ✅ |
 | RF05 | Búsqueda (título, autor)               | Público  | Alta      | ✅ |
 | RF06 | Filtros (categoría, precio, disponibilidad, popularidad) | Público | Alta | ✅ (sin "popularidad": no hay métrica en el backend) |
-| RF07 | Detalle del libro                      | Público  | Alta      | ✅ (endpoint) / 🔜 (vista) |
-| RF08 | Agregar al carrito                     | Cliente  | Alta      | 🔜 |
-| RF09 | Modificar cantidades                   | Cliente  | Alta      | 🔜 |
-| RF10 | Eliminar del carrito                   | Cliente  | Alta      | 🔜 |
-| RF11 | Registrar pedidos                      | Cliente  | Alta      | ✅ (endpoint) / 🔜 (vista) |
-| RF12 | Historial de pedidos                   | Cliente  | Alta      | ✅ (endpoint) / 🔜 (vista) |
-| RF13 | Proceso de pago (simulado)             | Cliente  | Alta      | 🔜 |
-| RF14 | Reseñas y calificaciones               | Cliente  | Media     | ✅ (endpoint) / 🔜 (vista) |
-| RF15 | Lista de deseos                        | Cliente  | Media     | ✅ (endpoint) / 🔜 (vista) |
-| RF16 | Administrar libros (CRUD)              | Admin    | Alta      | ✅ (endpoint) / 🔜 (vista) |
-| RF17 | Administrar categorías (CRUD)          | Admin    | Alta      | ✅ (endpoint) / 🔜 (vista) |
-| RF18 | Administrar usuarios                   | Admin    | Alta      | ✅ (endpoint) / 🔜 (vista) |
+| RF07 | Detalle del libro                      | Público  | Alta      | ✅ (endpoint) / ✅ (vista) |
+| RF08 | Agregar al carrito                     | Cliente  | Alta      | ✅ |
+| RF09 | Modificar cantidades                   | Cliente  | Alta      | ✅ |
+| RF10 | Eliminar del carrito                   | Cliente  | Alta      | ✅ |
+| RF11 | Registrar pedidos                      | Cliente  | Alta      | ✅ (endpoint) / ✅ (vista) |
+| RF12 | Historial de pedidos                   | Cliente  | Alta      | ✅ (endpoint) / ✅ (vista) |
+| RF13 | Proceso de pago (simulado)             | Cliente  | Alta      | ✅ |
+| RF14 | Reseñas y calificaciones               | Cliente  | Media     | ✅ (endpoint) / ✅ (vista) |
+| RF15 | Lista de deseos                        | Cliente  | Media     | ✅ (endpoint) / ✅ (vista) |
+| RF16 | Administrar libros (CRUD)              | Admin    | Alta      | ✅ (endpoint) / ✅ (vista) |
+| RF17 | Administrar categorías (CRUD)          | Admin    | Alta      | ✅ (endpoint) / ✅ (vista) |
+| RF18 | Administrar usuarios                   | Admin    | Alta      | ✅ (endpoint) / ✅ (vista) |
 | RF19 | Consultar información vía API          | Sistema  | Alta      | ✅ |
 | RF20 | Confirmación del pedido                | Cliente  | Media     | ✅ en pantalla / 🚫 por correo |
 
@@ -216,57 +213,19 @@ Formato: JSON. El contrato definitivo y completo está en `docs/API.md`. Los nom
 
 **Ramas:** `master` → `release/1.0` → `develop` → `Feature/*`. Cada feature nace de `develop`, se integra con Pull Request y se documenta con un README propio (backend en `docs/backend/`, frontend en `docs/frontend/`, nombrado como la feature, p. ej. `docs/frontend/frontend-catalogo.md`).
 
-### Features de backend
-
-| Rama                              | Contenido                                                | Estado |
-|-------------------------------------|-------------------------------------------------------------|--------|
-| `Feature/conexion-base-datos`     | `BaseDatos.php`                                          | ✅     |
-| `Feature/modelos-crud`            | Modelos con CRUD PDO                                     | ✅     |
-| `Feature/auth-controller`         | Registro, login, logout, sesión                          | ✅     |
-| `Feature/libro-api`               | Modelo `Libro`, controlador y endpoint, búsqueda y filtros | ✅   |
-| `Feature/filtro-autenticacion`    | Protección por sesión y rol                              | ✅     |
-| `Feature/pedido-api`              | Creación transaccional, historial, cambio de estado      | ✅     |
-| `Feature/categoria-api`           | Controlador y endpoint de categorías                     | ✅     |
-| `Feature/wishlist-api`            | Lista de deseos                                          | ✅     |
-| `Feature/resena-api`              | Reseñas                                                  | ✅     |
-| `Feature/usuario-api`             | Perfil y administración de usuarios                      | ✅     |
-| `Feature/recuperar-password`      | RF03                                                     | 🚫     |
-| `Feature/despliegue-pruebas`      | Hosting, HTTPS, casos de prueba                          | 🔜     |
-
-### Features de frontend
-
-| Rama                                  | Contenido                                        | Depende de                 | Estado |
-|------------------------------------------|-------------------------------------------------------|-------------------------------|--------|
-| `Feature/frontend-base-layout`        | Estilos, encabezado/pie, página principal        | —                          | ✅ |
-| `Feature/frontend-api-cliente`        | `api.js`                                         | `auth-controller` ✅       | ✅ |
-| `Feature/frontend-auth`               | Login, registro, estado de sesión                | `auth-controller` ✅       | ✅ |
-| `Feature/frontend-catalogo`           | Tarjetas, búsqueda, filtros                      | `libro-api` ✅              | ✅ |
-| `Feature/frontend-detalle-libro`      | Detalle del libro                                | `libro-api` ✅              | 🔜 |
-| `Feature/frontend-carrito`            | Carrito en el navegador                          | —                          | 🔜 |
-| `Feature/frontend-checkout`           | Checkout y confirmación                          | `pedido-api` ✅             | 🔜 |
-| `Feature/frontend-mis-pedidos`        | Historial del cliente                            | `pedido-api` ✅             | 🔜 |
-| `Feature/frontend-admin-libros`       | CRUD de libros                                   | `libro-api` ✅, `filtro-autenticacion` ✅ | 🔜 |
-| `Feature/frontend-admin-categorias`   | CRUD de categorías                               | `categoria-api` ✅          | 🔜 |
-| `Feature/frontend-admin-pedidos`      | Gestión de pedidos                               | `pedido-api` ✅             | 🔜 |
-| `Feature/frontend-admin-usuarios`     | Gestión de usuarios                              | `usuario-api` ✅            | 🔜 |
-| `Feature/frontend-resenas`            | Reseñas y estrellas                              | `resena-api` ✅             | 🔜 |
-| `Feature/frontend-wishlist`           | Lista de deseos                                  | `wishlist-api` ✅           | 🔜 |
-| `Feature/frontend-recuperar-password` | RF03 (opcional)                                  | `recuperar-password` 🚫     | 🚫 |
-| `Feature/frontend-pulido-final`       | Responsivo, accesibilidad, pruebas de interfaz   | Todas                      | 🔜 |
-
 ---
 
 ## 13. Entregables finales (Lineamientos de presentación)
 
 - [x] Descripción del problema
-- [ ] Product Backlog (RF/RNF e historias de usuario)
-- [ ] Wireframes / mockups
+- [x] Product Backlog (RF/RNF e historias de usuario)
+- [x] Wireframes / mockups
 - [x] Esquemas de BD (modelo relacional)
 - [x] `tienda_libros.sql`
-- [ ] Descripción de tecnologías utilizadas
+- [x] Descripción de tecnologías utilizadas
 - [ ] Casos y rutinas de prueba
-- [ ] Proyecto comprimido
-- [ ] URL de GitHub
+- [x] Proyecto comprimido
+- [x] URL de GitHub
 - [ ] URL del proyecto en producción (hosting)
 - [ ] Demo: registro → login → catálogo/búsqueda/filtros → CRUD de libros → carrito → pedido en `pedidos` + `detalle_pedido`
 
@@ -293,11 +252,6 @@ Usuario administrador de prueba: `admin@elfaroliterario.com` (la contraseña se 
 - El **backend queda completo** con `categoria-api`, `wishlist-api`, `resena-api` y `usuario-api`: todos los endpoints del Product Backlog original están implementados salvo los explícitamente descartados.
 - **RF03 (recuperar contraseña) y la confirmación de pedido por correo (parte de RF20) se descartan del alcance del proyecto.** La confirmación en pantalla de RF20 sí queda cubierta por la respuesta de `POST api/pedidos.php`.
 
-**Abiertas**
-
-- Regla de reseñas: ¿solo compradores? (sin resolver; documentado en `docs/API.md`)
-- Alcance del pago (RF13): simulado con método de pago seleccionable, pendiente de implementar en frontend.
-- Conectar `catalogo.js` y el formulario admin de libros al `api/categorias.php` real, reemplazando el mock (`obtenerCategoriasMock()`).
 
 ---
 

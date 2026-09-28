@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
   cargarWishlist();
 });
 
-// api/wishlist.php → app/controladores/WishlistController.php
+// Carga la wishlist del usuario.
 async function cargarWishlist() {
   const zonaEstado = document.getElementById('zonaEstadoWishlist');
   const lista = document.getElementById('listaWishlist');
@@ -19,7 +19,7 @@ async function cargarWishlist() {
   }
 
   if (resultado.datos.length === 0) {
-    zonaEstado.textContent = 'Tu lista de deseos está vacía. Márcalos desde el catálogo cuando esa opción esté lista.';
+    zonaEstado.textContent = 'Tu lista de deseos está vacía. Agrega libros desde el detalle de cada uno.';
     return;
   }
 
@@ -92,7 +92,7 @@ function crearFilaWishlist(item, rutaBase) {
   return fila;
 }
 
-// api/wishlist.php?id_producto=# → app/controladores/WishlistController.php
+// Quita un libro de la wishlist.
 async function quitarDeWishlist(idProducto, fila) {
   const resultado = await llamarApi(`wishlist.php?id_producto=${idProducto}`, 'DELETE');
   if (resultado.exito) {

@@ -1,13 +1,5 @@
 // assets/js/carrito.js
-/**
- * Manejo del carrito de compras. El carrito vive enteramente en el
- * navegador (localStorage): no hay tabla `carrito` en la base de datos.
- * Solo al hacer checkout se envían id_producto y cantidad al servidor.
- * Este archivo se carga en TODAS las páginas (ver footer.php) porque el
- * contador del header necesita estar siempre actualizado, como el
- * contador de un supermercado que muestra cuántos artículos llevas
- * aunque estés en cualquier pasillo, no solo en la caja.
- */
+// Manejo del carrito en localStorage.
 const CARRITO_STORAGE_KEY = 'elFaroCarrito';
 
 function obtenerCarrito() {
@@ -24,43 +16,64 @@ function guardarCarrito(carrito) {
   actualizarContadorCarrito();
 }
 
-// Agrega un libro al carrito, o suma la cantidad si ya estaba. `libro`
-// trae los datos que necesitamos mostrar sin volver a pedirlos al
-// servidor; el stock real se revalida siempre al hacer el pedido.
-function agregarAlCarrito(libro, cantidad = 1) {
+// Limita la cantidad según el stock si está disponible.
+function limitarPorStock(cantidad, stock) {
+  return Number.isFinite(stock) ? Math.min(cantidad, stock) : cantidad;
+}
+
+// Agrega un libro al carrito.
+function agregarAlCarrito(libro, cantidad = 1, stock = null) {
   const carrito = obtenerCarrito();
-  const existente = carrito.find((item) => item.id_producto === libro.id_producto);
+  const idProducto = Number(libro.id_producto);
+  const existente = carrito.find((item) => Number(item.id_producto) === idProducto);
+
+  const stockNuevo = stock !== null ? Number(stock) : existente ? existente.stock : null;
+  const stockConocido = Number.isFinite(stockNuevo) ? stockNuevo : null;
+
+  const cantidadPrevia = existente ? existente.cantidad : 0;
+  const cantidadDeseada = cantidadPrevia + cantidad;
+  const cantidadFinal = limitarPorStock(cantidadDeseada, stockConocido);
+
+  // Sin stock disponible: no se agrega nada.
+  if (cantidadFinal < 1) {
+    return { cantidadEnCarrito: cantidadPrevia, limitadoPorStock: true };
+  }
 
   if (existente) {
-    existente.cantidad += cantidad;
+    existente.cantidad = cantidadFinal;
+    existente.stock = stockConocido;
   } else {
     carrito.push({
-      id_producto: libro.id_producto,
+      id_producto: idProducto,
       nombre: libro.nombre,
       autor: libro.autor,
       precio: Number(libro.precio),
       imagen: libro.imagen || null,
-      cantidad: cantidad
+      stock: stockConocido,
+      cantidad: cantidadFinal
     });
   }
 
   guardarCarrito(carrito);
+  return { cantidadEnCarrito: cantidadFinal, limitadoPorStock: cantidadFinal < cantidadDeseada };
 }
 
 function actualizarCantidadCarrito(id_producto, cantidad) {
   let carrito = obtenerCarrito();
   if (cantidad < 1) {
-    carrito = carrito.filter((item) => item.id_producto !== id_producto);
+    carrito = carrito.filter((item) => Number(item.id_producto) !== id_producto);
   } else {
     carrito = carrito.map((item) =>
-      item.id_producto === id_producto ? { ...item, cantidad } : item
+      Number(item.id_producto) === id_producto
+        ? { ...item, cantidad: limitarPorStock(cantidad, item.stock) }
+        : item
     );
   }
   guardarCarrito(carrito);
 }
 
 function eliminarDelCarrito(id_producto) {
-  const carrito = obtenerCarrito().filter((item) => item.id_producto !== id_producto);
+  const carrito = obtenerCarrito().filter((item) => Number(item.id_producto) !== id_producto);
   guardarCarrito(carrito);
 }
 
@@ -87,8 +100,7 @@ function actualizarContadorCarrito() {
 document.addEventListener('DOMContentLoaded', () => {
   actualizarContadorCarrito();
 
-  // Esta comprobación evita que carrito.js (cargado en TODAS las páginas)
-  // intente tocar elementos que solo existen en carrito.php.
+  // Solo ejecuta la vista del carrito si existe en la página.
   if (document.getElementById('listaCarrito')) {
     renderizarCarrito();
     document.getElementById('listaCarrito').addEventListener('change', manejarCambioCantidad);
@@ -147,13 +159,20 @@ function crearFilaCarrito(item, rutaBase) {
 
   const colCantidad = document.createElement('div');
   colCantidad.className = 'col-6 col-md-2';
+  const idInput = `cantidad-${item.id_producto}`;
   const labelCantidad = document.createElement('label');
   labelCantidad.className = 'form-label small mb-1';
+  labelCantidad.htmlFor = idInput;
   labelCantidad.textContent = 'Cantidad';
   const inputCantidad = document.createElement('input');
   inputCantidad.type = 'number';
+  inputCantidad.id = idInput;
   inputCantidad.className = 'form-control form-control-sm input-cantidad';
   inputCantidad.min = '1';
+  // Tope de stock, solo si se conoce (ver agregarAlCarrito).
+  if (Number.isFinite(item.stock)) {
+    inputCantidad.max = item.stock;
+  }
   inputCantidad.value = item.cantidad;
   colCantidad.append(labelCantidad, inputCantidad);
 
@@ -186,9 +205,10 @@ function manejarCambioCantidad(evento) {
 
   if (isNaN(cantidad) || cantidad < 1) {
     cantidad = 1;
-    evento.target.value = 1;
   }
 
+  // actualizarCantidadCarrito aplica el tope de stock; renderizarCarrito
+  // vuelve a pintar el input con el valor ya ajustado.
   actualizarCantidadCarrito(idProducto, cantidad);
   renderizarCarrito();
 }

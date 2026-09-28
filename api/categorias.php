@@ -1,7 +1,5 @@
 <?php
-/**
- * Punto de entrada de la API para categorías.
- */
+// API de categorías.
 require_once __DIR__ . '/../includes/config/BaseDatos.php';
 require_once __DIR__ . '/../includes/ayudantes/Respuesta.php';
 require_once __DIR__ . '/../includes/ayudantes/AyudanteSesion.php';

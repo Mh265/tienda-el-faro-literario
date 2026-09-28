@@ -1,8 +1,5 @@
 <?php
-/**
- * Punto de entrada de la API para pedidos. Enruta por método HTTP, igual
- * que api/libros.php.
- */
+// API de pedidos.
 require_once __DIR__ . '/../includes/config/BaseDatos.php';
 require_once __DIR__ . '/../includes/ayudantes/Respuesta.php';
 require_once __DIR__ . '/../includes/ayudantes/AyudanteSesion.php';

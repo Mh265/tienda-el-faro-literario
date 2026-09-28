@@ -1,11 +1,8 @@
 <?php
-/**
- * Controlador de usuarios: perfil propio (cliente/admin) y gestión de
- * usuarios (solo administrador).
- */
+// Controlador de usuarios.
 class UsuarioController
 {
-    // GET /api/usuarios.php -> perfil propio del usuario autenticado.
+    // Perfil propio.
     public static function perfilPropio()
     {
         FiltroAutenticacion::protegerApi();

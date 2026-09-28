@@ -78,7 +78,7 @@ require_once __DIR__ . '/../../includes/plantillas/header.php';
 
     <!-- Formulario: se muestra solo si hay sesión activa (lo decide detalle-libro.js) -->
     <div id="formularioResenaContenedor" class="tarjeta-descripcion p-3 p-md-4 d-none">
-      <h3 class="h6 mb-3">Deja tu reseña</h3>
+      <h3 class="h6 mb-3" id="tituloFormResena">Deja tu reseña</h3>
       <form id="formResena" novalidate>
         <div class="mb-3">
           <label for="calificacionResena" class="form-label">Calificación</label>
@@ -94,7 +94,7 @@ require_once __DIR__ . '/../../includes/plantillas/header.php';
           <label for="comentarioResena" class="form-label">Comentario</label>
           <textarea class="form-control" id="comentarioResena" name="comentario" rows="3" maxlength="1000"></textarea>
         </div>
-        <button type="submit" class="btn btn-primary">Publicar reseña</button>
+        <button type="submit" class="btn btn-primary" id="btnPublicarResena">Publicar reseña</button>
       </form>
       <div id="mensajeResena" class="mt-3"></div>
     </div>
