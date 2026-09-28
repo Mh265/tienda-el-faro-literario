@@ -1,3 +1,4 @@
+// assets/js/detalle-libro.js
 let idProductoActual = null;
 let usuarioEnSesion = null;
 let libroActual = null;

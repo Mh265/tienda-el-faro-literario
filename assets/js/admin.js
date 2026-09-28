@@ -1,7 +1,10 @@
+// assets/js/admin.js
 /**
  * Lógica del panel de administración: dashboard, libros, categorías,
  * pedidos y usuarios. Este archivo se carga en las 5 vistas de
- * public/vistas/admin/.
+ * public/vistas/admin/; cada sección se activa sola si encuentra sus
+ * elementos en la página actual — el mismo "guardia de puerta" que usa
+ * carrito.js: revisa si le toca actuar antes de hacer nada.
  */
 document.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('statLibros')) inicializarDashboard();
@@ -83,15 +86,11 @@ async function inicializarDashboard() {
 // ==========================================================
 // LIBROS (admin/libros.php)
 // ==========================================================
-// Libro que se está editando en el modal (null si se está creando uno nuevo).
-let libroEnEdicion = null;
-
 function inicializarLibrosAdmin() {
   cargarCategoriasParaSelect();
   cargarLibrosAdmin();
 
   document.getElementById('btnNuevoLibro').addEventListener('click', () => {
-    libroEnEdicion = null;
     document.getElementById('formLibro').reset();
     document.getElementById('idLibroEditar').value = '';
     document.getElementById('tituloModalLibro').textContent = 'Nuevo libro';
@@ -192,7 +191,6 @@ function crearFilaLibroAdmin(libro, rutaBase) {
 }
 
 function abrirModalEdicionLibro(libro) {
-  libroEnEdicion = libro;
   limpiarMensajeModal('mensajeFormLibro');
 
   document.getElementById('tituloModalLibro').textContent = 'Editar libro';
@@ -221,9 +219,7 @@ async function manejarSubmitLibro(evento) {
 
   if (idLibro) {
     // PUT (actualizar) no acepta portada nueva, así que va como JSON normal.
-    // Se reenvía el nombre de la portada actual: LibroController::validarDatos()
-    // convierte un `imagen` ausente en NULL y Libro::actualizar() lo guardaría,
-    // borrando la portada del libro en cada edición.
+    // Libro::actualizar() no toca la columna `imagen`: la portada se conserva.
     const datos = {
       id_categoria: formulario.id_categoria.value,
       nombre: formulario.nombre.value.trim(),
@@ -233,7 +229,6 @@ async function manejarSubmitLibro(evento) {
       descripcion_larga: formulario.descripcion_larga.value.trim(),
       precio: formulario.precio.value,
       cantidad: formulario.cantidad.value,
-      imagen: libroEnEdicion ? libroEnEdicion.imagen : null,
       fecha_publicacion: formulario.fecha_publicacion.value || null
     };
     resultado = await llamarApi(`libros.php?id=${idLibro}`, 'PUT', datos);

@@ -40,10 +40,22 @@ class ResenaController
             Respuesta::error('El libro no está disponible.', 400);
         }
 
-        $idUsuario = AyudanteSesion::obtenerUsuarioSesion()['id_usuario'];
+            $idUsuario = AyudanteSesion::obtenerUsuarioSesion()['id_usuario'];
 
+        // Una sola reseña por usuario y libro: si ya existe, se pide editarla.
         // app/modelos/Resena.php
-        $idResena = Resena::crear($idUsuario, $idProducto, (int) $calificacion, $comentario);
+        if (Resena::obtenerPorUsuarioYProducto($idUsuario, $idProducto)) {
+            Respuesta::error('Ya escribiste una reseña para este libro. Edítala en lugar de crear otra.', 409);
+        }
+
+        try {
+            // app/modelos/Resena.php
+            $idResena = Resena::crear($idUsuario, $idProducto, (int) $calificacion, $comentario);
+        } catch (PDOException $e) {
+            // uq_resenas_usuario_producto: otra petición la creó justo antes.
+            Respuesta::error('Ya escribiste una reseña para este libro. Edítala en lugar de crear otra.', 409);
+        }
+
         Respuesta::exito('Reseña creada correctamente.', ['id_resena' => $idResena], 201);
     }
 

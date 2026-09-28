@@ -134,7 +134,6 @@ class LibroController
             $campos['descripcion_larga'],
             $campos['precio'],
             $campos['cantidad'],
-            $campos['imagen'],
             $campos['fecha_publicacion']
         );
 
@@ -197,7 +196,6 @@ class LibroController
         $descripcionLarga = trim($datos['descripcion_larga'] ?? '') ?: null;
         $precio = $datos['precio'] ?? null;
         $cantidad = $datos['cantidad'] ?? 0;
-        $imagen = trim($datos['imagen'] ?? '') ?: null;
         $fechaPublicacion = trim($datos['fecha_publicacion'] ?? '') ?: null;
 
         if (!$idCategoria || !ctype_digit((string) $idCategoria)) {
@@ -226,7 +224,6 @@ class LibroController
             'descripcion_larga'  => $descripcionLarga,
             'precio'             => $precio,
             'cantidad'           => (int) $cantidad,
-            'imagen'             => $imagen,
             'fecha_publicacion'  => $fechaPublicacion
         ];
     }

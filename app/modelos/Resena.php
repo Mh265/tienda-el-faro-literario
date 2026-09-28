@@ -32,6 +32,20 @@ class Resena
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    // Busca la reseña que un usuario ya escribió sobre un libro (o false si no
+    // existe). Lo usa el Controlador para evitar reseñas duplicadas.
+    public static function obtenerPorUsuarioYProducto($id_usuario, $id_producto)
+    {
+        $conexion = BaseDatos::conectar();
+        $sql = "SELECT * FROM resenas
+                WHERE id_usuario = :id_usuario AND id_producto = :id_producto";
+        $stmt = $conexion->prepare($sql);
+        $stmt->bindParam(":id_usuario", $id_usuario, PDO::PARAM_INT);
+        $stmt->bindParam(":id_producto", $id_producto, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
     //Registra una nueva valoración asociada a un usuario y a un producto
     public static function crear($id_usuario, $id_producto, $calificacion, $comentario)
     {

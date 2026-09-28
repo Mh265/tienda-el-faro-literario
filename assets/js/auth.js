@@ -1,3 +1,4 @@
+// assets/js/auth.js
 document.addEventListener('DOMContentLoaded', () => {
   verificarSesion();
   mostrarMensajeSiVieneDeRegistro();
@@ -46,7 +47,7 @@ async function verificarSesion() {
   }
 }
 
-// Tras un registro exitoso se redirige a login.php?registrado=1. Esta
+// Tras un registro exitoso redirigimos a login.php?registrado=1. Esta
 // función solo lee ese parámetro de la URL para mostrar el mensaje una vez;
 // no guarda nada en el navegador (ni localStorage ni sessionStorage).
 function mostrarMensajeSiVieneDeRegistro() {
@@ -120,10 +121,11 @@ async function manejarLogout() {
 }
 
 // Pinta una alerta de Bootstrap en #zonaMensajes. El texto SIEMPRE se
-// asigna con textContent (nunca innerHTML) por seguridad.
+// asigna con textContent (nunca innerHTML), porque ese texto puede venir
+// de la API y no debemos confiar en que no traiga HTML/JS malicioso.
 function mostrarMensaje(tipo, texto) {
   const zonaMensajes = document.getElementById('zonaMensajes');
-  zonaMensajes.innerHTML = ''; 
+  zonaMensajes.innerHTML = ''; // limpiamos el contenedor, no el texto del usuario
 
   const alerta = document.createElement('div');
   alerta.className = `alert alert-${tipo} alert-dismissible fade show`;

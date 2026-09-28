@@ -1,6 +1,8 @@
+// assets/js/checkout.js
 /**
  * Checkout (RF11, RF13, RF20). El carrito vive en el navegador (carrito.js);
- * aquí solo se envían id_producto y cantidad.
+ * aquí solo se envían id_producto y cantidad: el servidor calcula precios y
+ * total con los datos de la BD, nunca con lo que muestre esta pantalla.
  * El método de pago es simulado (RF13): no viaja a la API.
  */
 document.addEventListener('DOMContentLoaded', () => {

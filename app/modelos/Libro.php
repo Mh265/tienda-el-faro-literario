@@ -118,11 +118,10 @@ class Libro
         return $conexion->lastInsertId();
     }
 
-    // Actualiza los datos editables de un libro. No toca `estado`: eso se
-    // maneja aparte con darDeBaja()/reactivar(), para que quede explícito
-    // en el código cuándo se está dando de baja algo (en vez de que ocurra
-    // "de paso" dentro de una edición normal).
-    public static function actualizar($id_producto, $id_categoria, $nombre, $autor, $editorial, $descripcion_corta, $descripcion_larga, $precio, $cantidad, $imagen, $fecha_publicacion)
+        // Actualiza los datos editables de un libro. No toca `estado` (eso se
+    // maneja aparte con darDeBaja()/reactivar()) ni `imagen`: la portada solo
+    // se define al crear el libro, así una edición normal nunca la borra.
+    public static function actualizar($id_producto, $id_categoria, $nombre, $autor, $editorial, $descripcion_corta, $descripcion_larga, $precio, $cantidad, $fecha_publicacion)
     {
         $conexion = BaseDatos::conectar();
         $sql = "UPDATE productos
@@ -134,7 +133,6 @@ class Libro
                     descripcion_larga = :descripcion_larga,
                     precio = :precio,
                     cantidad = :cantidad,
-                    imagen = :imagen,
                     fecha_publicacion = :fecha_publicacion
                 WHERE id_producto = :id_producto";
         $stmt = $conexion->prepare($sql);
@@ -146,7 +144,6 @@ class Libro
         $stmt->bindParam(":descripcion_larga", $descripcion_larga);
         $stmt->bindParam(":precio", $precio);
         $stmt->bindParam(":cantidad", $cantidad, PDO::PARAM_INT);
-        $stmt->bindParam(":imagen", $imagen);
         $stmt->bindParam(":fecha_publicacion", $fecha_publicacion);
         $stmt->bindParam(":id_producto", $id_producto, PDO::PARAM_INT);
         return $stmt->execute();
