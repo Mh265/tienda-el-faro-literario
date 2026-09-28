@@ -9,9 +9,7 @@ require_once __DIR__ . '/../app/controladores/LibroController.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'];
 
-// POST ahora llega como multipart/form-data (para poder recibir el archivo
-// de portada), así que ya no se decodifica como JSON: los campos de texto
-// están en $_POST y el archivo en $_FILES. GET/PUT/DELETE siguen en JSON.
+// POST usa multipart/form-data para recibir la portada.
 $datos = ($metodo === 'POST') ? [] : (json_decode(file_get_contents('php://input'), true) ?? []);
 $accion = $_GET['accion'] ?? ($datos['accion'] ?? '');
 $id = $_GET['id'] ?? null;

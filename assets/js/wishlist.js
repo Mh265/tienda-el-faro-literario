@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
   cargarWishlist();
 });
 
-// api/wishlist.php → app/controladores/WishlistController.php
+// Carga la wishlist del usuario.
 async function cargarWishlist() {
   const zonaEstado = document.getElementById('zonaEstadoWishlist');
   const lista = document.getElementById('listaWishlist');
@@ -92,7 +92,7 @@ function crearFilaWishlist(item, rutaBase) {
   return fila;
 }
 
-// api/wishlist.php?id_producto=# → app/controladores/WishlistController.php
+// Quita un libro de la wishlist.
 async function quitarDeWishlist(idProducto, fila) {
   const resultado = await llamarApi(`wishlist.php?id_producto=${idProducto}`, 'DELETE');
   if (resultado.exito) {

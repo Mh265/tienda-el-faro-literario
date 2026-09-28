@@ -1,51 +1,38 @@
 <?php
-/**
- * Controlador del catálogo de libros. Usa los Modelos Libro.php y
- * Categoria.php (este último solo para validar que la categoría exista
- * antes de crear/editar un libro).
- */
+// Controlador del catálogo de libros.
 class LibroController
 {
-    // GET /api/libros.php -> catálogo público (solo libros con estado 'activo').
-    // $filtros llega directo desde $_GET: q, id_categoria, precio_min,
-    // precio_max, disponible, orden (todos opcionales).
+    // Listado público.
     public static function listar($filtros)
     {
-        // app/modelos/Libro.php
         $libros = Libro::obtenerCatalogo($filtros);
         Respuesta::exito('Listado de libros obtenido correctamente.', $libros);
     }
 
-    // GET /api/libros.php?accion=admin-listado -> listado completo (activos
-    // e inactivos) para el panel de administración.
+    // Listado administrativo.
     public static function listarAdmin()
     {
         if (!AyudanteSesion::esAdministrador()) {
             Respuesta::error('No tiene permisos para ver este listado.', 403);
         }
 
-        // app/modelos/Libro.php
         $libros = Libro::obtenerTodosAdmin();
         Respuesta::exito('Listado administrativo de libros obtenido correctamente.', $libros);
     }
 
-    // GET /api/libros.php?id=# -> detalle de un libro.
+    // Detalle de libro.
     public static function detalle($id_producto)
     {
         if (!ctype_digit((string) $id_producto)) {
             Respuesta::error('El id del libro no es válido.', 400);
         }
 
-        // app/modelos/Libro.php
         $libro = Libro::obtenerPorId($id_producto);
 
         if (!$libro) {
             Respuesta::error('Libro no encontrado.', 404);
         }
 
-        // Un libro inactivo solo lo puede consultar un administrador (por
-        // ejemplo para editarlo); un visitante o cliente recibe 404, como
-        // si el libro no existiera, igual que hace el catálogo público.
         if ($libro['estado'] !== 'activo' && !AyudanteSesion::esAdministrador()) {
             Respuesta::error('Libro no encontrado.', 404);
         }
@@ -53,8 +40,7 @@ class LibroController
         Respuesta::exito('Libro encontrado.', $libro);
     }
 
-        // POST /api/libros.php -> crea un libro nuevo. Solo administrador.
-    // $archivoImagen es $_FILES['imagen'] (o null si no se envió portada).
+    // Crear libro.
     public static function crear($datos, $archivoImagen = null)
     {
         if (!AyudanteSesion::esAdministrador()) {
@@ -66,21 +52,16 @@ class LibroController
             Respuesta::error($campos['error'], 400);
         }
 
-        // app/modelos/Categoria.php
         if (!Categoria::obtenerPorId($campos['id_categoria'])) {
             Respuesta::error('La categoría indicada no existe.', 400);
         }
 
-        // includes/ayudantes/AyudanteArchivo.php — la portada ahora llega
-        // como archivo real, no como texto en el body; sustituye lo que
-        // haya devuelto validarDatos() para 'imagen'.
         try {
             $campos['imagen'] = AyudanteArchivo::guardarPortada($archivoImagen);
         } catch (Exception $e) {
             Respuesta::error($e->getMessage(), 400);
         }
 
-        // app/modelos/Libro.php
         $idProducto = Libro::crear(
             $campos['id_categoria'],
             $campos['nombre'],
@@ -97,7 +78,7 @@ class LibroController
         Respuesta::exito('Libro creado correctamente.', ['id_producto' => $idProducto], 201);
     }
 
-    // PUT /api/libros.php?id=# -> actualiza los datos de un libro existente.
+    // Actualizar libro.
     public static function actualizar($id_producto, $datos)
     {
         if (!AyudanteSesion::esAdministrador()) {
@@ -108,7 +89,6 @@ class LibroController
             Respuesta::error('El id del libro no es válido.', 400);
         }
 
-        // app/modelos/Libro.php
         if (!Libro::obtenerPorId($id_producto)) {
             Respuesta::error('Libro no encontrado.', 404);
         }
@@ -118,12 +98,10 @@ class LibroController
             Respuesta::error($campos['error'], 400);
         }
 
-        // app/modelos/Categoria.php
         if (!Categoria::obtenerPorId($campos['id_categoria'])) {
             Respuesta::error('La categoría indicada no existe.', 400);
         }
 
-        // app/modelos/Libro.php
         Libro::actualizar(
             $id_producto,
             $campos['id_categoria'],
@@ -140,9 +118,7 @@ class LibroController
         Respuesta::exito('Libro actualizado correctamente.');
     }
 
-    // DELETE /api/libros.php?id=# -> nunca borra físicamente: da de baja
-    // (estado = 'inactivo'). Ver el comentario en Libro::darDeBaja() para
-    // el porqué (FK RESTRICT de detalle_pedido hacia productos).
+    // Baja lógica del libro.
     public static function darDeBaja($id_producto)
     {
         if (!AyudanteSesion::esAdministrador()) {
@@ -153,7 +129,6 @@ class LibroController
             Respuesta::error('El id del libro no es válido.', 400);
         }
 
-        // app/modelos/Libro.php
         if (!Libro::obtenerPorId($id_producto)) {
             Respuesta::error('Libro no encontrado.', 404);
         }
@@ -162,8 +137,7 @@ class LibroController
         Respuesta::exito('Libro dado de baja correctamente.');
     }
 
-    // PUT /api/libros.php?id=#&accion=reactivar -> vuelve a mostrar el libro
-    // en el catálogo público.
+    // Reactivar libro.
     public static function reactivar($id_producto)
     {
         if (!AyudanteSesion::esAdministrador()) {
@@ -174,7 +148,6 @@ class LibroController
             Respuesta::error('El id del libro no es válido.', 400);
         }
 
-        // app/modelos/Libro.php
         if (!Libro::obtenerPorId($id_producto)) {
             Respuesta::error('Libro no encontrado.', 404);
         }
@@ -183,9 +156,7 @@ class LibroController
         Respuesta::exito('Libro reactivado correctamente.');
     }
 
-    // Valida y normaliza los campos de un libro; lo usan tanto crear() como
-    // actualizar(). Devuelve un arreglo asociativo con los valores listos
-    // para el Modelo y, si algo falla, la clave 'error' con el mensaje.
+    // Validación de datos del libro.
     private static function validarDatos($datos)
     {
         $idCategoria = $datos['id_categoria'] ?? null;

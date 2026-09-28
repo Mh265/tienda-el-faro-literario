@@ -1,11 +1,8 @@
 <?php
-/**
- * Wishlist.php
- */
+// Modelo de la lista de deseos.
 class Wishlist
 {
-    // Trae los libros que un usuario marcó como favoritos, con datos
-    // básicos del producto (JOIN) para pintarlos directamente en la vista.
+    // Libros favoritos del usuario.
     public static function obtenerPorUsuario($id_usuario)
     {
         $conexion = BaseDatos::conectar();
@@ -20,7 +17,7 @@ class Wishlist
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    //Busca un registro específico por su ID primario interno
+    // Obtener wishlist por ID.
     public static function obtenerPorId($id_wishlist)
     {
         $conexion = BaseDatos::conectar();
@@ -31,10 +28,7 @@ class Wishlist
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // La restricción UNIQUE (id_usuario, id_producto) en la tabla es la
-    // que evita duplicados; si ya existe, PDO lanzará una excepción que
-    // el Controlador deberá capturar y traducir a un mensaje amigable
-    // ("ya está en tu lista de deseos").
+    // Agregar libro a la wishlist.
     public static function crear($id_usuario, $id_producto)
     {
         $conexion = BaseDatos::conectar();
@@ -45,7 +39,7 @@ class Wishlist
         return $stmt->execute();
     }
     
-    //Elimina una entrada de la lista usando su clave primaria
+    // Eliminar entrada por ID.
     public static function eliminar($id_wishlist)
     {
         $conexion = BaseDatos::conectar();
@@ -55,7 +49,7 @@ class Wishlist
         return $stmt->execute();
     }
 
-    //Elimina el registro buscando directamente el par usuario-producto
+    // Eliminar entrada por usuario y producto.
     public static function eliminarPorUsuarioYProducto($id_usuario, $id_producto)
     {
         $conexion = BaseDatos::conectar();

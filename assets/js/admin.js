@@ -1,11 +1,4 @@
-// assets/js/admin.js
-/**
- * Lógica del panel de administración: dashboard, libros, categorías,
- * pedidos y usuarios. Este archivo se carga en las 5 vistas de
- * public/vistas/admin/; cada sección se activa sola si encuentra sus
- * elementos en la página actual — el mismo "guardia de puerta" que usa
- * carrito.js: revisa si le toca actuar antes de hacer nada.
- */
+// Panel de administración.
 document.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('statLibros')) inicializarDashboard();
   if (document.getElementById('tablaLibrosAdmin')) inicializarLibrosAdmin();
@@ -22,8 +15,7 @@ const CLASES_ESTADO_PEDIDO = {
   cancelado: 'text-bg-danger'
 };
 
-// Vacía la zona de mensajes de un formulario modal (el contenedor, no texto
-// del usuario) para que un mensaje anterior no aparezca al reabrirlo.
+// Limpia el mensaje del modal.
 function limpiarMensajeModal(idZona) {
   document.getElementById(idZona).innerHTML = '';
 }

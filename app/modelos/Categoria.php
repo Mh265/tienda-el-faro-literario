@@ -1,11 +1,8 @@
 <?php
-/**
- * Categoria.php
- * Modelo para la tabla `categorias` (géneros literarios del catálogo).
- */
+// Modelo de categorías.
 class Categoria
 {
-    //Listar categorías
+    // Listar categorías.
     public static function obtenerTodos()
     {
         $conexion = BaseDatos::conectar();
@@ -15,7 +12,7 @@ class Categoria
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    //Lista datos de una categoría específica por su ID
+    // Obtener categoría por ID.
     public static function obtenerPorId($id_categoria)
     {
         $conexion = BaseDatos::conectar();
@@ -26,7 +23,7 @@ class Categoria
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    //Inserta una nueva categoría en la tabla
+    // Crear categoría.
     public static function crear($nombre, $descripcion)
     {
         $conexion = BaseDatos::conectar();
@@ -38,7 +35,7 @@ class Categoria
         return $conexion->lastInsertId();
     }
 
-    //Edita una entrada específica dentro de la tabla de categoría
+    // Actualizar categoría.
     public static function actualizar($id_categoria, $nombre, $descripcion)
     {
         $conexion = BaseDatos::conectar();
@@ -52,7 +49,7 @@ class Categoria
         return $stmt->execute();
     }
 
-    //Elimina el registro de una categoría de la base de datos basándose en su ID.
+    // Eliminar categoría.
     public static function eliminar($id_categoria)
     {
         $conexion = BaseDatos::conectar();

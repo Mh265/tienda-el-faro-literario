@@ -1,12 +1,8 @@
 <?php
-/**
- * DetallePedido.php
- * Modelo para la tabla `detalle_pedido` (líneas / renglones de un pedido:
- * qué producto, cuántas unidades y a qué precio se vendió).
- */
+// Modelo de líneas del pedido.
 class DetallePedido
-{   
-    //Recupera todas las líneas de producto asociadas a un pedido específico,
+{
+    // Líneas de un pedido.
     public static function obtenerPorPedido($id_pedido)
     {
         $conexion = BaseDatos::conectar();
@@ -20,7 +16,7 @@ class DetallePedido
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    //Busca una línea específica por su ID único
+    // Obtener línea por ID.
     public static function obtenerPorId($id_detalle)
     {
         $conexion = BaseDatos::conectar();
@@ -31,7 +27,7 @@ class DetallePedido
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    //Inserta un nuevo renglón de producto asociado a la cabecera del pedido
+    // Crear línea del pedido.
     public static function crear($id_pedido, $id_producto, $cantidad, $precio, $conexion = null)
     {
         $conexion = $conexion ?? BaseDatos::conectar();
@@ -46,7 +42,7 @@ class DetallePedido
         return $conexion->lastInsertId();
     }
 
-    //Elimina una línea específica del pedido
+    // Actualizar cantidad de la línea.
     public static function actualizar($id_detalle, $cantidad)
     {
         $conexion = BaseDatos::conectar();

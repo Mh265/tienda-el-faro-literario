@@ -1,23 +1,15 @@
 <?php
-/**
- * Ayudante para validar y guardar portadas de libros subidas por el
- * administrador. Se mantiene separado del Controlador para no mezclar
- * lógica de manejo de archivos con las reglas de negocio de Libro.
- */
+// Ayudante para manejar portadas de libros.
 class AyudanteArchivo
 {
     private const EXTENSIONES_PERMITIDAS = ['jpg', 'jpeg', 'png', 'webp'];
     private const TAMANO_MAXIMO = 2 * 1024 * 1024; // 2 MB
     private const CARPETA_DESTINO = __DIR__ . '/../../assets/img/uploads/';
 
-    // Recibe el arreglo $_FILES['imagen'] (o null si no llegó nada en la
-    // petición). Devuelve el nombre del archivo ya guardado en el servidor,
-    // o null si no se subió ninguna imagen (la portada es opcional).
-    // Lanza una excepción con un mensaje en español si el archivo no pasa
-    // las validaciones, para que el Controlador la traduzca a un 400.
+    // Guarda la portada si existe.
     public static function guardarPortada($archivo)
     {
-        // No se subió ningún archivo: válido, imagen queda NULL.
+        // Si no hay archivo, se acepta como null.
         if ($archivo === null || $archivo['error'] === UPLOAD_ERR_NO_FILE) {
             return null;
         }
@@ -35,9 +27,7 @@ class AyudanteArchivo
             throw new Exception('Formato de imagen no permitido. Use JPG, PNG o WEBP.');
         }
 
-        // Nombre generado por el servidor: nunca se usa el nombre original
-        // del archivo (evita colisiones de nombres y archivos maliciosos
-        // disfrazados de imagen).
+        // Genera un nombre seguro para evitar colisiones.
         $nombreArchivo = uniqid('libro_') . '.' . $extension;
         $rutaDestino = self::CARPETA_DESTINO . $nombreArchivo;
 

@@ -1,42 +1,8 @@
-// assets/js/api.js
-/**
- * Cliente único de la API REST de "El Faro Literario".
- * Todas las vistas deben usar llamarApi() en vez de fetch() directo,
- * para que el manejo de JSON, errores y la cookie de sesión viva en
- * un solo lugar del proyecto.
- */
-
-/**
- * Llama a un endpoint dentro de /api y normaliza la respuesta.
- * Nunca lanza (throw): cualquier falla de red, de parseo de JSON o
- * del servidor se traduce siempre al mismo objeto de retorno, para
- * que quien llama (catalogo.js, carrito.js, checkout.js, etc.) no
- * necesite su propio try/catch.
- *
- * @param {string} recurso - archivo dentro de /api, con su query string si aplica.
- *   Ej: "auth.php?accion=login", "libros.php?id=5". Quien llama arma el string completo.
- * @param {string} [metodo='GET'] - método HTTP: GET, POST, PUT o DELETE.
- * @param {Object|null} [cuerpo=null] - objeto a enviar como JSON en el body.
- *   Los nombres de campo deben ser snake_case, igual que las columnas de la BD.
- * @returns {Promise<{exito: boolean, mensaje: string, datos: any, estado: number}>}
- *
- * Ejemplo:
- *   // api/auth.php → app/controladores/AuthController.php
- *   const resultado = await llamarApi('auth.php?accion=login', 'POST', {
- *       correo: correo,
- *       password: password
- *   });
- *   if (!resultado.exito) {
- *       mostrarError(resultado.mensaje);
- *       return;
- *   }
- *   console.log(resultado.datos);
- */
+// Cliente único para la API.
 async function llamarApi(recurso, metodo = 'GET', cuerpo = null) {
   const opciones = {
     method: metodo,
-    // Envía la cookie de sesión de PHP con cada petición, incluso
-    // aunque el frontend y la API compartan el mismo origen.
+    // Envía la cookie de sesión.
     credentials: 'same-origin',
     headers: {}
   };

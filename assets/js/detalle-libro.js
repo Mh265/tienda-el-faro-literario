@@ -2,7 +2,7 @@
 let idProductoActual = null;
 let usuarioEnSesion = null;
 let libroActual = null;
-let miResenaActual = null; // reseña del usuario en sesión para este libro (si ya escribió una)
+let miResenaActual = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
   idProductoActual = new URLSearchParams(window.location.search).get('id');
@@ -130,9 +130,7 @@ function manejarAgregarCarrito() {
   }
 }
 
-// api/wishlist.php → app/controladores/WishlistController.php
-// Comprueba si el libro ya está en la lista de deseos del usuario, para
-// pintar el botón correctamente al cargar la página.
+// Ajusta el estado del botón de wishlist.
 async function sincronizarBotonWishlist() {
   if (!usuarioEnSesion) return;
 
@@ -170,14 +168,13 @@ async function manejarToggleWishlist() {
   }
 }
 
-// api/resenas.php?id_producto=# → app/controladores/ResenaController.php
+// Carga las reseñas del libro.
 async function cargarResenas() {
   const zonaEstado = document.getElementById('zonaEstadoResenas');
   const lista = document.getElementById('listaResenas');
   const promedio = document.getElementById('promedioResenas');
 
-  // Siempre se repinta desde cero: así sirve tanto la carga inicial como
-  // después de publicar, editar o eliminar una reseña.
+  // Revisa el contenido desde cero.
   lista.innerHTML = '';
   promedio.textContent = '';
 
@@ -236,8 +233,7 @@ function crearTarjetaResena(resena) {
 
   tarjeta.append(encabezado, fecha, comentario);
 
-  // El dueño elimina la suya; un administrador puede eliminar cualquiera
-  // (moderación). El servidor lo valida igual: esto es solo lo visible.
+  // Muestra opción de eliminación si corresponde.
   if (esDuena || esAdmin) {
     const btnEliminar = document.createElement('button');
     btnEliminar.type = 'button';
@@ -250,8 +246,7 @@ function crearTarjetaResena(resena) {
   return tarjeta;
 }
 
-// Muestra el formulario solo con sesión activa. Si el usuario ya reseñó este
-// libro, el mismo formulario pasa a "editar" (precargado) en vez de crear otra.
+// Prepara el formulario según la sesión y la reseña actual.
 function prepararFormularioResena(resenas) {
   const contenedor = document.getElementById('formularioResenaContenedor');
   const aviso = document.getElementById('avisoLoginResena');

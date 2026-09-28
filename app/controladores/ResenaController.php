@@ -1,11 +1,8 @@
 <?php
-/**
- * Controlador de reseñas. Usa los Modelos Resena.php y Libro.php (para
- * validar que el libro exista antes de reseñarlo).
- */
+// Controlador de reseñas.
 class ResenaController
 {
-    // GET /api/resenas.php?id_producto=# -> reseñas de un libro. Público.
+    // Listado público por producto.
     public static function listarPorProducto($id_producto)
     {
         if (!ctype_digit((string) $id_producto)) {

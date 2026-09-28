@@ -1,12 +1,8 @@
 <?php
-/**
- * Controlador de la lista de deseos. Usa los Modelos Wishlist.php y
- * Libro.php (para validar que el libro exista). Todas las acciones
- * requieren sesión activa (cliente o administrador).
- */
+// Controlador de wishlist.
 class WishlistController
 {
-    // GET /api/wishlist.php -> lista de deseos del usuario autenticado.
+    // Listado del usuario autenticado.
     public static function listar()
     {
         FiltroAutenticacion::protegerApi();

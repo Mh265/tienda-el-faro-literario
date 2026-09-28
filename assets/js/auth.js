@@ -19,14 +19,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Vistas a las que se permite volver tras iniciar sesión (?volver=checkout.php).
-// Lista blanca a propósito: nunca se redirige a lo que llegue por la URL sin
-// validarlo (evita un "open redirect" hacia otro sitio).
+// Vistas permitidas para volver después del login.
 const VISTAS_PERMITIDAS_VOLVER = ['checkout.php', 'carrito.php', 'mis-pedidos.php', 'wishlist.php', 'perfil.php'];
 
-// Pregunta al servidor si hay sesión activa y ajusta el navbar según la
-// respuesta. Un 401 aquí es el caso normal de un visitante: no es un error,
-// solo significa "muestra la zona de invitado".
+// Ajusta el navbar según la sesión.
 async function verificarSesion() {
   // api/auth.php?accion=verificar-sesion → app/controladores/AuthController.php
   const resultado = await llamarApi('auth.php?accion=verificar-sesion', 'POST');
@@ -47,9 +43,7 @@ async function verificarSesion() {
   }
 }
 
-// Tras un registro exitoso redirigimos a login.php?registrado=1. Esta
-// función solo lee ese parámetro de la URL para mostrar el mensaje una vez;
-// no guarda nada en el navegador (ni localStorage ni sessionStorage).
+// Muestra el aviso cuando el registro fue exitoso.
 function mostrarMensajeSiVieneDeRegistro() {
   const parametros = new URLSearchParams(window.location.search);
   if (parametros.get('registrado') === '1') {
@@ -57,8 +51,7 @@ function mostrarMensajeSiVieneDeRegistro() {
   }
 }
 
-// Destino tras el login: la vista privada de la que venía el usuario (si está
-// en la lista blanca) o el inicio.
+// Destino tras el login.
 function obtenerDestinoTrasLogin() {
   const volver = new URLSearchParams(window.location.search).get('volver');
   return VISTAS_PERMITIDAS_VOLVER.includes(volver) ? volver : '../index.php';
@@ -81,8 +74,7 @@ async function manejarSubmitLogin(evento) {
     return;
   }
 
-  // La sesión ya quedó abierta en el servidor (cookie de PHP). No se
-  // guarda el usuario en el cliente; simplemente navegamos.
+  // La sesión ya quedó abierta en el servidor.
   window.location.href = obtenerDestinoTrasLogin();
 }
 
@@ -112,17 +104,14 @@ async function manejarSubmitRegistro(evento) {
   window.location.href = 'login.php?registrado=1';
 }
 
-// Cierra la sesión y siempre vuelve al inicio: si el usuario estaba en una
-// vista privada (mis-pedidos, admin...) no debe quedarse viéndola.
+// Cierra la sesión y vuelve al inicio.
 async function manejarLogout() {
   // api/auth.php?accion=logout → app/controladores/AuthController.php
   await llamarApi('auth.php?accion=logout', 'POST');
   window.location.href = API_URL.replace(/api\/$/, '') + 'public/index.php';
 }
 
-// Pinta una alerta de Bootstrap en #zonaMensajes. El texto SIEMPRE se
-// asigna con textContent (nunca innerHTML), porque ese texto puede venir
-// de la API y no debemos confiar en que no traiga HTML/JS malicioso.
+// Muestra una alerta de Bootstrap.
 function mostrarMensaje(tipo, texto) {
   const zonaMensajes = document.getElementById('zonaMensajes');
   zonaMensajes.innerHTML = ''; // limpiamos el contenedor, no el texto del usuario

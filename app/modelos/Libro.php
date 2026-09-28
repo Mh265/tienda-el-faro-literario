@@ -1,13 +1,8 @@
 <?php
-/**
- * Libro.php
- * Modelo para la tabla `productos` (libros del catálogo de "El Faro Literario").
- */
+// Modelo de libros.
 class Libro
 {
-    // Catálogo público: solo libros con estado = 'activo'. Todos los filtros
-    // son opcionales, por eso el WHERE se arma dinámicamente según lo que
-    // venga en $filtros (típicamente $_GET desde el Controlador).
+    // Catálogo público.
     public static function obtenerCatalogo($filtros = [])
     {
         $conexion = BaseDatos::conectar();
@@ -35,13 +30,10 @@ class Libro
             $parametros[':precio_max'] = $filtros['precio_max'];
         }
 
-        // disponible=1 -> solo libros con stock; si no se envía, no se filtra.
         if (isset($filtros['disponible']) && $filtros['disponible'] == '1') {
             $condiciones[] = "p.cantidad > 0";
         }
 
-        // Lista blanca de criterios de orden: el valor de $_GET['orden']
-        // nunca se concatena directamente en el SQL.
         $ordenesPermitidos = [
             'precio_asc'  => 'p.precio ASC',
             'precio_desc' => 'p.precio DESC',
@@ -64,8 +56,7 @@ class Libro
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Listado completo para el panel de administración: incluye libros
-    // activos e inactivos, sin los filtros del catálogo público.
+    // Listado administrativo.
     public static function obtenerTodosAdmin()
     {
         $conexion = BaseDatos::conectar();
@@ -78,9 +69,7 @@ class Libro
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Detalle de un libro por su ID, sin filtrar por estado: el Controlador
-    // decide si un libro inactivo puede mostrarse (por ejemplo, a un admin
-    // que lo va a editar) o no (a un visitante).
+    // Obtener libro por ID.
     public static function obtenerPorId($id_producto, $conexion = null)
     {
         $conexion = $conexion ?? BaseDatos::conectar();
@@ -94,8 +83,7 @@ class Libro
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // Inserta un libro nuevo. estado nace siempre en 'activo'; darlo de baja
-    // es una operación aparte (ver darDeBaja).
+    // Crear libro.
     public static function crear($id_categoria, $nombre, $autor, $editorial, $descripcion_corta, $descripcion_larga, $precio, $cantidad, $imagen, $fecha_publicacion)
     {
         $conexion = BaseDatos::conectar();
@@ -118,9 +106,7 @@ class Libro
         return $conexion->lastInsertId();
     }
 
-        // Actualiza los datos editables de un libro. No toca `estado` (eso se
-    // maneja aparte con darDeBaja()/reactivar()) ni `imagen`: la portada solo
-    // se define al crear el libro, así una edición normal nunca la borra.
+    // Actualizar libro.
     public static function actualizar($id_producto, $id_categoria, $nombre, $autor, $editorial, $descripcion_corta, $descripcion_larga, $precio, $cantidad, $fecha_publicacion)
     {
         $conexion = BaseDatos::conectar();
@@ -149,10 +135,7 @@ class Libro
         return $stmt->execute();
     }
 
-    // "Eliminar" un libro nunca es un DELETE físico: detalle_pedido tiene
-    // FK hacia productos con ON DELETE RESTRICT, así que un libro con
-    // ventas ya registradas ni siquiera se podría borrar. En vez de eso,
-    // se marca estado = 'inactivo' y el catálogo público deja de mostrarlo.
+    // Dar de baja libro.
     public static function darDeBaja($id_producto)
     {
         $conexion = BaseDatos::conectar();
@@ -172,10 +155,7 @@ class Libro
         return $stmt->execute();
     }
 
-    // La condición "cantidad >= :cantidad_minima" en el propio UPDATE evita que el
-    // stock quede negativo si dos pedidos concurrentes pasan la validación inicial
-    // casi al mismo tiempo. Si no se actualizó ninguna fila (rowCount() === 0),
-    // el Controller interpreta que el stock ya no alcanza y revierte el pedido.
+    // Descontar stock con validación atómica.
     public static function descontarStock($id_producto, $cantidad, $conexion = null)
     {
         $conexion = $conexion ?? BaseDatos::conectar();

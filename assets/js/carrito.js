@@ -1,13 +1,5 @@
 // assets/js/carrito.js
-/**
- * Manejo del carrito de compras. El carrito vive enteramente en el
- * navegador (localStorage): no hay tabla `carrito` en la base de datos.
- * Solo al hacer checkout se envían id_producto y cantidad al servidor.
- * Este archivo se carga en TODAS las páginas (ver footer.php) porque el
- * contador del header necesita estar siempre actualizado, como el
- * contador de un supermercado que muestra cuántos artículos llevas
- * aunque estés en cualquier pasillo, no solo en la caja.
- */
+// Manejo del carrito en localStorage.
 const CARRITO_STORAGE_KEY = 'elFaroCarrito';
 
 function obtenerCarrito() {
@@ -24,20 +16,12 @@ function guardarCarrito(carrito) {
   actualizarContadorCarrito();
 }
 
-// Si el stock se conoce (número), la cantidad nunca lo supera; si no se
-// conoce (ej. libro agregado desde la wishlist), no se limita aquí y el
-// servidor lo valida al crear el pedido.
+// Limita la cantidad según el stock si está disponible.
 function limitarPorStock(cantidad, stock) {
   return Number.isFinite(stock) ? Math.min(cantidad, stock) : cantidad;
 }
 
-// Agrega un libro al carrito, o suma la cantidad si ya estaba. `libro`
-// trae los datos que necesitamos mostrar sin volver a pedirlos al
-// servidor; el stock real se revalida siempre al hacer el pedido.
-// `stock` es opcional: la vista de detalle lo envía (libro.cantidad) para
-// que el carrito pueda poner un tope a la cantidad.
-// Devuelve { cantidadEnCarrito, limitadoPorStock } para que quien llama
-// pueda avisar al usuario si se ajustó la cantidad.
+// Agrega un libro al carrito.
 function agregarAlCarrito(libro, cantidad = 1, stock = null) {
   const carrito = obtenerCarrito();
   const idProducto = Number(libro.id_producto);
@@ -116,8 +100,7 @@ function actualizarContadorCarrito() {
 document.addEventListener('DOMContentLoaded', () => {
   actualizarContadorCarrito();
 
-  // Esta comprobación evita que carrito.js (cargado en TODAS las páginas)
-  // intente tocar elementos que solo existen en carrito.php.
+  // Solo ejecuta la vista del carrito si existe en la página.
   if (document.getElementById('listaCarrito')) {
     renderizarCarrito();
     document.getElementById('listaCarrito').addEventListener('change', manejarCambioCantidad);

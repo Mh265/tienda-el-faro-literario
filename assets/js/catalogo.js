@@ -16,16 +16,12 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('filtroDisponible').addEventListener('change', cargarCatalogo);
 });
 
-// api/categorias.php → app/controladores/CategoriaController.php
-// (reemplaza al antiguo obtenerCategoriasMock(), que ya no se necesita:
-// el endpoint real ya está implementado y documentado)
+// Carga las categorías para el filtro.
 async function poblarSelectCategorias() {
   const select = document.getElementById('filtroCategoria');
   const resultado = await llamarApi('categorias.php', 'GET');
 
   if (!resultado.exito) {
-    // El catálogo sigue funcionando aunque falle categorías: el select
-    // se queda solo con "Todas" en vez de tumbar la página completa.
     return;
   }
 

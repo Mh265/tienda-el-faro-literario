@@ -1,13 +1,8 @@
 <?php
-/**
- * Resena.php
- * Modelo para la tabla `resenas` (calificación 1-5 y comentario de un
- * usuario sobre un libro).
- */
+// Modelo de reseñas.
 class Resena
 {
-    // Trae las reseñas de UN libro (uso típico: detalle-libro.php),
-    // con nombre y apellido del autor de la reseña vía JOIN a usuarios.
+    // Reseñas de un libro.
     public static function obtenerPorProducto($id_producto)
     {
         $conexion = BaseDatos::conectar();
@@ -21,7 +16,7 @@ class Resena
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    //Busca los datos de una sola reseña por su ID
+    // Obtener reseña por ID.
     public static function obtenerPorId($id_resena)
     {
         $conexion = BaseDatos::conectar();
@@ -32,8 +27,7 @@ class Resena
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // Busca la reseña que un usuario ya escribió sobre un libro (o false si no
-    // existe). Lo usa el Controlador para evitar reseñas duplicadas.
+    // Verificar si el usuario ya reseñó este libro.
     public static function obtenerPorUsuarioYProducto($id_usuario, $id_producto)
     {
         $conexion = BaseDatos::conectar();
@@ -46,7 +40,7 @@ class Resena
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    //Registra una nueva valoración asociada a un usuario y a un producto
+    // Crear reseña.
     public static function crear($id_usuario, $id_producto, $calificacion, $comentario)
     {
         $conexion = BaseDatos::conectar();
@@ -61,9 +55,7 @@ class Resena
         return $conexion->lastInsertId();
     }
 
-    // Permite que el propio usuario edite su reseña (calificación/comentario).
-    // La validación de que sea el dueño de la reseña quien la edite es del
-    // Controlador (compara id_usuario de sesión contra la reseña).
+    // Actualizar reseña.
     public static function actualizar($id_resena, $calificacion, $comentario)
     {
         $conexion = BaseDatos::conectar();
@@ -76,7 +68,7 @@ class Resena
         $stmt->bindParam(":id_resena", $id_resena, PDO::PARAM_INT);
         return $stmt->execute();
     }
-    //Borra una reseña de la base de datos
+    // Eliminar reseña.
     public static function eliminar($id_resena)
     {
         $conexion = BaseDatos::conectar();

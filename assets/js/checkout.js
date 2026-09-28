@@ -1,10 +1,5 @@
 // assets/js/checkout.js
-/**
- * Checkout (RF11, RF13, RF20). El carrito vive en el navegador (carrito.js);
- * aquí solo se envían id_producto y cantidad: el servidor calcula precios y
- * total con los datos de la BD, nunca con lo que muestre esta pantalla.
- * El método de pago es simulado (RF13): no viaja a la API.
- */
+// Checkout del pedido.
 document.addEventListener('DOMContentLoaded', () => {
   renderizarResumenCheckout();
   document.getElementById('btnConfirmarPedido').addEventListener('click', confirmarPedido);
@@ -60,14 +55,14 @@ async function confirmarPedido() {
   limpiarMensajeCheckout();
   boton.disabled = true;
 
-  // Pago simulado (RF13): con tarjeta se muestra una breve espera, sin cobro real.
+  // Simulación del pago con tarjeta.
   if (metodoPago === 'tarjeta') {
     boton.textContent = 'Procesando pago...';
     await new Promise((resolver) => setTimeout(resolver, 800));
   }
   boton.textContent = 'Creando pedido...';
 
-  // Solo id_producto y cantidad: el servidor toma el precio de la BD.
+  // El servidor calcula el precio final.
   const items = carrito.map((item) => ({ id_producto: item.id_producto, cantidad: item.cantidad }));
   const resultado = await llamarApi('pedidos.php', 'POST', { items });
 
@@ -99,7 +94,7 @@ function limpiarMensajeCheckout() {
   document.getElementById('mensajeCheckout').innerHTML = '';
 }
 
-// El texto se asigna con textContent: el mensaje viene de la API.
+// Muestra un mensaje de checkout.
 function mostrarMensajeCheckout(tipo, texto) {
   const zona = document.getElementById('mensajeCheckout');
   zona.innerHTML = '';
