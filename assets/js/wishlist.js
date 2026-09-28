@@ -19,7 +19,7 @@ async function cargarWishlist() {
   }
 
   if (resultado.datos.length === 0) {
-    zonaEstado.textContent = 'Tu lista de deseos está vacía. Márcalos desde el catálogo cuando esa opción esté lista.';
+    zonaEstado.textContent = 'Tu lista de deseos está vacía. Agrega libros desde el detalle de cada uno.';
     return;
   }
 

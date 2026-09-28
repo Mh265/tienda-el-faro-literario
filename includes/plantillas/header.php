@@ -1,8 +1,4 @@
 <?php
-// includes/plantillas/header.php
-// Variables que define cada vista ANTES de incluir esta plantilla:
-//   $tituloPagina -> texto para <title>
-//   $rutaBase     -> ruta relativa hasta la raíz ('../', '../../', '../../../')
 $tituloPagina = $tituloPagina ?? 'El Faro Literario';
 $rutaBase     = $rutaBase ?? '';
 ?>
@@ -16,7 +12,6 @@ $rutaBase     = $rutaBase ?? '';
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
-  <!-- Orden importante: Bootstrap -> variables -> styles -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="<?= $rutaBase ?>assets/css/variables.css">
   <link rel="stylesheet" href="<?= $rutaBase ?>assets/css/styles.css">
@@ -74,7 +69,7 @@ $rutaBase     = $rutaBase ?? '';
               <span id="nombreUsuario">Mi cuenta</span>
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
-              <!-- mis-pedidos.php y wishlist.php aún no existen (llegan en sus features); se referencian ya para no reescribir el menú luego -->
+              <li><a class="dropdown-item" href="<?= $rutaBase ?>public/vistas/perfil.php">Mi perfil</a></li>
               <li><a class="dropdown-item" href="<?= $rutaBase ?>public/vistas/mis-pedidos.php">Mis pedidos</a></li>
               <li><a class="dropdown-item" href="<?= $rutaBase ?>public/vistas/wishlist.php">Lista de deseos</a></li>
               <li id="enlaceAdmin" class="d-none"><a class="dropdown-item" href="<?= $rutaBase ?>public/vistas/admin/libros.php">Panel de administración</a></li>

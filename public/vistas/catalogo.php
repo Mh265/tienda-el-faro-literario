@@ -1,4 +1,3 @@
-// public/vistas/catalogo.php
 <?php
 $tituloPagina = 'Catálogo';
 $rutaBase = '../../';
