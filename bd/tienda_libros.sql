@@ -344,3 +344,39 @@ INSERT INTO productos (id_categoria, nombre, autor, editorial, descripcion_corta
  'Historia de amor entre dos jóvenes con cáncer.',
  'Hazel y Augustus se conocen en un grupo de apoyo para pacientes con cáncer y desarrollan una historia de amor marcada por el humor, la fragilidad y la búsqueda de sentido ante la enfermedad. Es una de las novelas juveniles contemporáneas más leídas.',
  135.00, 16, 'activo');
+
+-- ---------------------------------------------------------------------
+-- Fecha de publicación de los libros (año de la primera edición).
+-- Se usa 1 de enero porque solo se conoce el año; el día no es exacto.
+-- "Los diarios de Che Guevara" queda sin fecha (es una recopilación y
+-- no tiene una primera edición clara).
+-- ---------------------------------------------------------------------
+UPDATE productos SET fecha_publicacion = '1967-01-01' WHERE nombre = 'Cien años de soledad';
+UPDATE productos SET fecha_publicacion = '1982-01-01' WHERE nombre = 'La casa de los espíritus';
+UPDATE productos SET fecha_publicacion = '1963-01-01' WHERE nombre = 'Rayuela';
+UPDATE productos SET fecha_publicacion = '1953-01-01' WHERE nombre = 'Fahrenheit 451';
+UPDATE productos SET fecha_publicacion = '1965-01-01' WHERE nombre = 'Dune';
+UPDATE productos SET fecha_publicacion = '1932-01-01' WHERE nombre = 'Un mundo feliz';
+UPDATE productos SET fecha_publicacion = '1951-01-01' WHERE nombre = 'Fundación';
+UPDATE productos SET fecha_publicacion = '1943-01-01' WHERE nombre = 'El Principito';
+UPDATE productos SET fecha_publicacion = '1964-01-01' WHERE nombre = 'Charlie y la fábrica de chocolate';
+UPDATE productos SET fecha_publicacion = '1988-01-01' WHERE nombre = 'Matilda';
+UPDATE productos SET fecha_publicacion = '2011-01-01' WHERE nombre = 'Sapiens: de animales a dioses';
+UPDATE productos SET fecha_publicacion = '1997-01-01' WHERE nombre = 'Guns, Germs, and Steel';
+UPDATE productos SET fecha_publicacion = '1947-01-01' WHERE nombre = 'El diario de Ana Frank';
+UPDATE productos SET fecha_publicacion = '1997-01-01' WHERE nombre = 'El poder del ahora';
+UPDATE productos SET fecha_publicacion = '1989-01-01' WHERE nombre = 'Los 7 hábitos de la gente altamente efectiva';
+UPDATE productos SET fecha_publicacion = '2018-01-01' WHERE nombre = 'Hábitos atómicos';
+UPDATE productos SET fecha_publicacion = '2007-01-01' WHERE nombre = 'El nombre del viento';
+UPDATE productos SET fecha_publicacion = '1937-01-01' WHERE nombre = 'El Hobbit';
+UPDATE productos SET fecha_publicacion = '1997-01-01' WHERE nombre = 'Harry Potter y la piedra filosofal';
+UPDATE productos SET fecha_publicacion = '1986-01-01' WHERE nombre = 'It (Eso)';
+UPDATE productos SET fecha_publicacion = '1977-01-01' WHERE nombre = 'El resplandor';
+UPDATE productos SET fecha_publicacion = '1939-01-01' WHERE nombre = 'Diez negritos';
+UPDATE productos SET fecha_publicacion = '1924-01-01' WHERE nombre = 'Veinte poemas de amor y una canción desesperada';
+UPDATE productos SET fecha_publicacion = '1855-01-01' WHERE nombre = 'Hojas de hierba';
+UPDATE productos SET fecha_publicacion = '2011-01-01' WHERE nombre = 'Steve Jobs';
+UPDATE productos SET fecha_publicacion = '1997-01-01' WHERE nombre = 'Padre rico, padre pobre';
+UPDATE productos SET fecha_publicacion = '1926-01-01' WHERE nombre = 'El hombre más rico de Babilonia';
+UPDATE productos SET fecha_publicacion = '1605-01-01' WHERE nombre = 'Don Quijote de la Mancha';
+UPDATE productos SET fecha_publicacion = '2012-01-01' WHERE nombre = 'Bajo la misma estrella';

@@ -487,6 +487,12 @@ function crearFilaPedidoAdmin(pedido, nombresPorId) {
 
 // api/pedidos.php?id=# → app/controladores/PedidoController.php
 async function cambiarEstadoPedidoAdmin(idPedido, estadoNuevo) {
+  // Cancelar devuelve el stock y no se puede deshacer: se pide confirmación.
+  if (estadoNuevo === 'cancelado' && !confirm('¿Cancelar este pedido? Se devolverá el stock y no se podrá cambiar de nuevo.')) {
+    cargarPedidosAdmin(); // revierte el select a su valor real
+    return;
+  }
+
   const resultado = await llamarApi(`pedidos.php?id=${idPedido}`, 'PUT', { estado: estadoNuevo });
   if (!resultado.exito) {
     alert(resultado.mensaje);

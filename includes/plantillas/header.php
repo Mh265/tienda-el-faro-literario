@@ -8,7 +8,7 @@ $rutaBase     = $rutaBase ?? '';
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?= htmlspecialchars($tituloPagina) ?> | El Faro Literario</title>
-
+  <link rel="icon" type="image/png" href="<?= $rutaBase ?>assets/img/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 

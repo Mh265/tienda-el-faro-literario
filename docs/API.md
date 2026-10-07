@@ -443,9 +443,14 @@ existe); un administrador puede ver cualquiera.
 
 Requiere sesión de tipo `administrador`. Cuerpo: `{ "estado": "pagado" }`.
 Valores permitidos: `pendiente`, `pagado`, `enviado`, `entregado`,
-`cancelado`. No valida secuencia (queda como regla de negocio abierta).
+`cancelado`. No valida la secuencia entre estados, salvo estas reglas:
+
+- **Cancelar devuelve el stock:** al pasar a `cancelado`, la cantidad de cada línea se suma de nuevo a `productos.cantidad`, todo en una transacción.
+- **`cancelado` es definitivo:** un pedido cancelado no puede cambiar a otro estado (`409`), para no devolver el stock dos veces.
+- Si el estado que se manda es el mismo que el pedido ya tiene, responde `200` sin hacer cambios.
 
 Respuesta `200`: `{ "exito": true, "mensaje": "Estado del pedido actualizado correctamente.", "datos": null }`
+(al cancelar: `"Pedido cancelado y stock devuelto correctamente."`)
 
 | Código | Mensaje |
 |---|---|
@@ -453,6 +458,8 @@ Respuesta `200`: `{ "exito": true, "mensaje": "Estado del pedido actualizado cor
 | 400 | Estado no válido. Use: pendiente, pagado, enviado, entregado, cancelado. |
 | 403 | No tiene permisos de administrador para realizar esta acción. |
 | 404 | Pedido no encontrado. |
+| 409 | Un pedido cancelado no se puede cambiar a otro estado. |
+| 500 | No se pudo cancelar el pedido, intenta de nuevo. |
 
 ---
 
@@ -766,6 +773,7 @@ Con esto, **todos los endpoints planeados originalmente en el Product Backlog es
 | 06/10/2026 | `api/libros.php` | Nuevo `POST ?accion=portada&id=#` para cambiar la portada; el orden `recientes` desempata por `id_producto`; se valida con `getimagesize()` que el archivo sea una imagen |
 | 06/10/2026 | `api/wishlist.php` | `GET` ahora incluye `cantidad` y `estado` del libro; `POST` devuelve el `id_wishlist` real (antes devolvía `true`) |
 | 06/10/2026 | `api/pedidos.php` | El `total` se redondea a 2 decimales; un error de base de datos responde `500` con mensaje genérico en lugar del texto de PDO |
+| 06/10/2026 | `api/pedidos.php` | Cancelar un pedido devuelve el stock (transacción); un pedido `cancelado` ya no puede cambiar de estado (`409`) |
 | 06/10/2026 | *(general)* | Si falla la conexión a la BD, ahora se responde JSON `500` ("No se pudo conectar con la base de datos.") y el detalle se registra con `error_log` |
 
 ---

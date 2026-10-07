@@ -157,6 +157,48 @@ class PedidoController
             Respuesta::error('Pedido no encontrado.', 404);
         }
 
+        // Mismo estado: no hay nada que cambiar (y así no se devuelve el stock dos veces).
+        if ($pedido['estado'] === $estadoNuevo) {
+            Respuesta::exito('El pedido ya tenía ese estado.');
+        }
+
+        // Un pedido cancelado ya devolvió su stock: no se puede reactivar.
+        if ($pedido['estado'] === 'cancelado') {
+            Respuesta::error('Un pedido cancelado no se puede cambiar a otro estado.', 409);
+        }
+
+        // Cancelar: se devuelve el stock de cada línea. Todo en una transacción,
+        // igual que al crear el pedido: si algo falla, no se guarda nada.
+        if ($estadoNuevo === 'cancelado') {
+            $conexion = BaseDatos::conectar();
+
+            try {
+                // app/modelos/DetallePedido.php
+                $lineas = DetallePedido::obtenerPorPedido($id_pedido);
+
+                $conexion->beginTransaction();
+
+                foreach ($lineas as $linea) {
+                    // app/modelos/Libro.php
+                    Libro::devolverStock($linea['id_producto'], $linea['cantidad'], $conexion);
+                }
+
+                // app/modelos/Pedido.php
+                Pedido::actualizar($id_pedido, $pedido['total'], $estadoNuevo, $conexion);
+
+                $conexion->commit();
+            } catch (PDOException $e) {
+                if ($conexion->inTransaction()) {
+                    $conexion->rollBack();
+                }
+                error_log('Error al cancelar pedido: ' . $e->getMessage());
+                Respuesta::error('No se pudo cancelar el pedido, intenta de nuevo.', 500);
+            }
+
+            Respuesta::exito('Pedido cancelado y stock devuelto correctamente.');
+        }
+
+        // app/modelos/Pedido.php
         Pedido::actualizar($id_pedido, $pedido['total'], $estadoNuevo);
 
         Respuesta::exito('Estado del pedido actualizado correctamente.');

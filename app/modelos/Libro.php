@@ -181,5 +181,18 @@ class Libro
         $stmt->execute();
         return $stmt->rowCount() > 0;
     }
+
+    // Devolver stock (al cancelar un pedido). Es lo contrario de descontarStock().
+    public static function devolverStock($id_producto, $cantidad, $conexion = null)
+    {
+        $conexion = $conexion ?? BaseDatos::conectar();
+        $sql = "UPDATE productos
+                SET cantidad = cantidad + :cantidad
+                WHERE id_producto = :id_producto";
+        $stmt = $conexion->prepare($sql);
+        $stmt->bindParam(":cantidad", $cantidad, PDO::PARAM_INT);
+        $stmt->bindParam(":id_producto", $id_producto, PDO::PARAM_INT);
+        return $stmt->execute();
+    }
 }
 ?>
