@@ -27,6 +27,11 @@ class AyudanteArchivo
             throw new Exception('Formato de imagen no permitido. Use JPG, PNG o WEBP.');
         }
 
+        // La extensión se puede falsear: getimagesize() confirma que el contenido es una imagen.
+        if (@getimagesize($archivo['tmp_name']) === false) {
+            throw new Exception('El archivo no es una imagen válida.');
+        }
+
         // Genera un nombre seguro para evitar colisiones.
         $nombreArchivo = uniqid('libro_') . '.' . $extension;
         $rutaDestino = self::CARPETA_DESTINO . $nombreArchivo;

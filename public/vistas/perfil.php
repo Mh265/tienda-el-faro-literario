@@ -36,26 +36,26 @@ require_once __DIR__ . '/../../includes/plantillas/header.php';
   <div class="col-lg-8">
     <div class="tarjeta-perfil p-4">
       <h2 class="h5 mb-3">Datos personales</h2>
-      <form id="formPerfil" novalidate>
+      <form id="formPerfil">
         <div class="row g-3">
           <div class="col-md-6">
             <label for="nombrePerfil" class="form-label">Nombre</label>
-            <input type="text" class="form-control" id="nombrePerfil" name="nombre" required>
+            <input type="text" class="form-control" id="nombrePerfil" name="nombre" maxlength="100" required>
           </div>
           <div class="col-md-6">
             <label for="apellidoPerfil" class="form-label">Apellido</label>
-            <input type="text" class="form-control" id="apellidoPerfil" name="apellido" required>
+            <input type="text" class="form-control" id="apellidoPerfil" name="apellido" maxlength="100" required>
           </div>
           <div class="col-md-6">
             <label for="telefonoPerfil" class="form-label">Teléfono</label>
-            <input type="tel" class="form-control" id="telefonoPerfil" name="telefono">
+            <input type="tel" class="form-control" id="telefonoPerfil" name="telefono" maxlength="20">
           </div>
           <div class="col-md-6">
             <label for="direccionPerfil" class="form-label">Dirección</label>
-            <input type="text" class="form-control" id="direccionPerfil" name="direccion">
+            <input type="text" class="form-control" id="direccionPerfil" name="direccion" maxlength="255">
           </div>
         </div>
-        <p class="small text-muted mt-3 mb-3">El correo no se puede editar desde aquí (fuera de alcance junto con RF03).</p>
+        <p class="small text-muted mt-3 mb-3">El correo no se puede modificar desde esta sección.</p>
         <button type="submit" class="btn btn-primary">Guardar cambios</button>
         <div id="mensajePerfil" class="mt-3"></div>
       </form>

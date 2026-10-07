@@ -38,7 +38,7 @@ require_once __DIR__ . '/../../includes/plantillas/header.php';
         <input class="form-check-input" type="radio" name="metodoPago" id="pagoContraEntrega" value="contra_entrega">
         <label class="form-check-label" for="pagoContraEntrega">Pago contra entrega</label>
       </div>
-      <p class="small text-muted mb-0">RF13: proceso de pago simulado. No se procesa ningún cobro real.</p>
+      <p class="small text-muted mb-0">Este es un pago simulado: no se realiza ningún cobro real.</p>
     </div>
   </div>
 

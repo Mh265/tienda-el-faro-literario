@@ -118,6 +118,39 @@ class LibroController
         Respuesta::exito('Libro actualizado correctamente.');
     }
 
+    // Cambia la portada de un libro existente (POST ?accion=portada&id=#).
+    // Va aparte de actualizar() porque la portada viaja como archivo
+    // (multipart/form-data) y actualizar() recibe JSON.
+    public static function actualizarPortada($id_producto, $archivoImagen)
+    {
+        if (!AyudanteSesion::esAdministrador()) {
+            Respuesta::error('No tiene permisos para cambiar la portada.', 403);
+        }
+
+        if (!ctype_digit((string) $id_producto)) {
+            Respuesta::error('El id del libro no es válido.', 400);
+        }
+
+        if (!Libro::obtenerPorId($id_producto)) {
+            Respuesta::error('Libro no encontrado.', 404);
+        }
+
+        try {
+            $imagen = AyudanteArchivo::guardarPortada($archivoImagen);
+        } catch (Exception $e) {
+            Respuesta::error($e->getMessage(), 400);
+        }
+
+        // guardarPortada() devuelve null cuando no se envió ningún archivo.
+        if ($imagen === null) {
+            Respuesta::error('Debe seleccionar una imagen.', 400);
+        }
+
+        // app/modelos/Libro.php
+        Libro::actualizarImagen($id_producto, $imagen);
+        Respuesta::exito('Portada actualizada correctamente.', ['imagen' => $imagen]);
+    }
+
     // Baja lógica del libro.
     public static function darDeBaja($id_producto)
     {

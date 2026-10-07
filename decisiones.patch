@@ -1,0 +1,194 @@
+diff --git a/app/controladores/PedidoController.php b/app/controladores/PedidoController.php
+index ab022f0..74f3e34 100644
+--- a/app/controladores/PedidoController.php
++++ b/app/controladores/PedidoController.php
+@@ -157,6 +157,48 @@ class PedidoController
+             Respuesta::error('Pedido no encontrado.', 404);
+         }
+ 
++        // Mismo estado: no hay nada que cambiar (y así no se devuelve el stock dos veces).
++        if ($pedido['estado'] === $estadoNuevo) {
++            Respuesta::exito('El pedido ya tenía ese estado.');
++        }
++
++        // Un pedido cancelado ya devolvió su stock: no se puede reactivar.
++        if ($pedido['estado'] === 'cancelado') {
++            Respuesta::error('Un pedido cancelado no se puede cambiar a otro estado.', 409);
++        }
++
++        // Cancelar: se devuelve el stock de cada línea. Todo en una transacción,
++        // igual que al crear el pedido: si algo falla, no se guarda nada.
++        if ($estadoNuevo === 'cancelado') {
++            $conexion = BaseDatos::conectar();
++
++            try {
++                // app/modelos/DetallePedido.php
++                $lineas = DetallePedido::obtenerPorPedido($id_pedido);
++
++                $conexion->beginTransaction();
++
++                foreach ($lineas as $linea) {
++                    // app/modelos/Libro.php
++                    Libro::devolverStock($linea['id_producto'], $linea['cantidad'], $conexion);
++                }
++
++                // app/modelos/Pedido.php
++                Pedido::actualizar($id_pedido, $pedido['total'], $estadoNuevo, $conexion);
++
++                $conexion->commit();
++            } catch (PDOException $e) {
++                if ($conexion->inTransaction()) {
++                    $conexion->rollBack();
++                }
++                error_log('Error al cancelar pedido: ' . $e->getMessage());
++                Respuesta::error('No se pudo cancelar el pedido, intenta de nuevo.', 500);
++            }
++
++            Respuesta::exito('Pedido cancelado y stock devuelto correctamente.');
++        }
++
++        // app/modelos/Pedido.php
+         Pedido::actualizar($id_pedido, $pedido['total'], $estadoNuevo);
+ 
+         Respuesta::exito('Estado del pedido actualizado correctamente.');
+diff --git a/app/modelos/Libro.php b/app/modelos/Libro.php
+index 24539e3..04311eb 100644
+--- a/app/modelos/Libro.php
++++ b/app/modelos/Libro.php
+@@ -181,5 +181,18 @@ class Libro
+         $stmt->execute();
+         return $stmt->rowCount() > 0;
+     }
++
++    // Devolver stock (al cancelar un pedido). Es lo contrario de descontarStock().
++    public static function devolverStock($id_producto, $cantidad, $conexion = null)
++    {
++        $conexion = $conexion ?? BaseDatos::conectar();
++        $sql = "UPDATE productos
++                SET cantidad = cantidad + :cantidad
++                WHERE id_producto = :id_producto";
++        $stmt = $conexion->prepare($sql);
++        $stmt->bindParam(":cantidad", $cantidad, PDO::PARAM_INT);
++        $stmt->bindParam(":id_producto", $id_producto, PDO::PARAM_INT);
++        return $stmt->execute();
++    }
+ }
+ ?>
+\ No newline at end of file
+diff --git a/app/modelos/Pedido.php b/app/modelos/Pedido.php
+index 3654ebe..3a4d08a 100644
+--- a/app/modelos/Pedido.php
++++ b/app/modelos/Pedido.php
+@@ -47,9 +47,9 @@ class Pedido
+     }
+ 
+     // Actualizar pedido.
+-    public static function actualizar($id_pedido, $total, $estado)
++    public static function actualizar($id_pedido, $total, $estado, $conexion = null)
+     {
+-        $conexion = BaseDatos::conectar();
++        $conexion = $conexion ?? BaseDatos::conectar();
+         $sql = "UPDATE pedidos SET total = :total, estado = :estado WHERE id_pedido = :id_pedido";
+         $stmt = $conexion->prepare($sql);
+         $stmt->bindParam(":total", $total);
+diff --git a/assets/js/admin.js b/assets/js/admin.js
+index c66d591..8cf49e0 100644
+--- a/assets/js/admin.js
++++ b/assets/js/admin.js
+@@ -487,6 +487,12 @@ function crearFilaPedidoAdmin(pedido, nombresPorId) {
+ 
+ // api/pedidos.php?id=# → app/controladores/PedidoController.php
+ async function cambiarEstadoPedidoAdmin(idPedido, estadoNuevo) {
++  // Cancelar devuelve el stock y no se puede deshacer: se pide confirmación.
++  if (estadoNuevo === 'cancelado' && !confirm('¿Cancelar este pedido? Se devolverá el stock y no se podrá cambiar de nuevo.')) {
++    cargarPedidosAdmin(); // revierte el select a su valor real
++    return;
++  }
++
+   const resultado = await llamarApi(`pedidos.php?id=${idPedido}`, 'PUT', { estado: estadoNuevo });
+   if (!resultado.exito) {
+     alert(resultado.mensaje);
+diff --git a/bd/tienda_libros.sql b/bd/tienda_libros.sql
+index 03ec0de..391186a 100644
+--- a/bd/tienda_libros.sql
++++ b/bd/tienda_libros.sql
+@@ -343,4 +343,40 @@ INSERT INTO productos (id_categoria, nombre, autor, editorial, descripcion_corta
+ (12, 'Bajo la misma estrella', 'John Green', 'Dutton Books',
+  'Historia de amor entre dos jóvenes con cáncer.',
+  'Hazel y Augustus se conocen en un grupo de apoyo para pacientes con cáncer y desarrollan una historia de amor marcada por el humor, la fragilidad y la búsqueda de sentido ante la enfermedad. Es una de las novelas juveniles contemporáneas más leídas.',
+- 135.00, 16, 'activo');
+\ No newline at end of file
++ 135.00, 16, 'activo');
++
++-- ---------------------------------------------------------------------
++-- Fecha de publicación de los libros (año de la primera edición).
++-- Se usa 1 de enero porque solo se conoce el año; el día no es exacto.
++-- "Los diarios de Che Guevara" queda sin fecha (es una recopilación y
++-- no tiene una primera edición clara).
++-- ---------------------------------------------------------------------
++UPDATE productos SET fecha_publicacion = '1967-01-01' WHERE nombre = 'Cien años de soledad';
++UPDATE productos SET fecha_publicacion = '1982-01-01' WHERE nombre = 'La casa de los espíritus';
++UPDATE productos SET fecha_publicacion = '1963-01-01' WHERE nombre = 'Rayuela';
++UPDATE productos SET fecha_publicacion = '1953-01-01' WHERE nombre = 'Fahrenheit 451';
++UPDATE productos SET fecha_publicacion = '1965-01-01' WHERE nombre = 'Dune';
++UPDATE productos SET fecha_publicacion = '1932-01-01' WHERE nombre = 'Un mundo feliz';
++UPDATE productos SET fecha_publicacion = '1951-01-01' WHERE nombre = 'Fundación';
++UPDATE productos SET fecha_publicacion = '1943-01-01' WHERE nombre = 'El Principito';
++UPDATE productos SET fecha_publicacion = '1964-01-01' WHERE nombre = 'Charlie y la fábrica de chocolate';
++UPDATE productos SET fecha_publicacion = '1988-01-01' WHERE nombre = 'Matilda';
++UPDATE productos SET fecha_publicacion = '2011-01-01' WHERE nombre = 'Sapiens: de animales a dioses';
++UPDATE productos SET fecha_publicacion = '1997-01-01' WHERE nombre = 'Guns, Germs, and Steel';
++UPDATE productos SET fecha_publicacion = '1947-01-01' WHERE nombre = 'El diario de Ana Frank';
++UPDATE productos SET fecha_publicacion = '1997-01-01' WHERE nombre = 'El poder del ahora';
++UPDATE productos SET fecha_publicacion = '1989-01-01' WHERE nombre = 'Los 7 hábitos de la gente altamente efectiva';
++UPDATE productos SET fecha_publicacion = '2018-01-01' WHERE nombre = 'Hábitos atómicos';
++UPDATE productos SET fecha_publicacion = '2007-01-01' WHERE nombre = 'El nombre del viento';
++UPDATE productos SET fecha_publicacion = '1937-01-01' WHERE nombre = 'El Hobbit';
++UPDATE productos SET fecha_publicacion = '1997-01-01' WHERE nombre = 'Harry Potter y la piedra filosofal';
++UPDATE productos SET fecha_publicacion = '1986-01-01' WHERE nombre = 'It (Eso)';
++UPDATE productos SET fecha_publicacion = '1977-01-01' WHERE nombre = 'El resplandor';
++UPDATE productos SET fecha_publicacion = '1939-01-01' WHERE nombre = 'Diez negritos';
++UPDATE productos SET fecha_publicacion = '1924-01-01' WHERE nombre = 'Veinte poemas de amor y una canción desesperada';
++UPDATE productos SET fecha_publicacion = '1855-01-01' WHERE nombre = 'Hojas de hierba';
++UPDATE productos SET fecha_publicacion = '2011-01-01' WHERE nombre = 'Steve Jobs';
++UPDATE productos SET fecha_publicacion = '1997-01-01' WHERE nombre = 'Padre rico, padre pobre';
++UPDATE productos SET fecha_publicacion = '1926-01-01' WHERE nombre = 'El hombre más rico de Babilonia';
++UPDATE productos SET fecha_publicacion = '1605-01-01' WHERE nombre = 'Don Quijote de la Mancha';
++UPDATE productos SET fecha_publicacion = '2012-01-01' WHERE nombre = 'Bajo la misma estrella';
+diff --git a/docs/API.md b/docs/API.md
+index fb1c343..6eb2fc3 100644
+--- a/docs/API.md
++++ b/docs/API.md
+@@ -443,9 +443,14 @@ existe); un administrador puede ver cualquiera.
+ 
+ Requiere sesión de tipo `administrador`. Cuerpo: `{ "estado": "pagado" }`.
+ Valores permitidos: `pendiente`, `pagado`, `enviado`, `entregado`,
+-`cancelado`. No valida secuencia (queda como regla de negocio abierta).
++`cancelado`. No valida la secuencia entre estados, salvo estas reglas:
++
++- **Cancelar devuelve el stock:** al pasar a `cancelado`, la cantidad de cada línea se suma de nuevo a `productos.cantidad`, todo en una transacción.
++- **`cancelado` es definitivo:** un pedido cancelado no puede cambiar a otro estado (`409`), para no devolver el stock dos veces.
++- Si el estado que se manda es el mismo que el pedido ya tiene, responde `200` sin hacer cambios.
+ 
+ Respuesta `200`: `{ "exito": true, "mensaje": "Estado del pedido actualizado correctamente.", "datos": null }`
++(al cancelar: `"Pedido cancelado y stock devuelto correctamente."`)
+ 
+ | Código | Mensaje |
+ |---|---|
+@@ -453,6 +458,8 @@ Respuesta `200`: `{ "exito": true, "mensaje": "Estado del pedido actualizado cor
+ | 400 | Estado no válido. Use: pendiente, pagado, enviado, entregado, cancelado. |
+ | 403 | No tiene permisos de administrador para realizar esta acción. |
+ | 404 | Pedido no encontrado. |
++| 409 | Un pedido cancelado no se puede cambiar a otro estado. |
++| 500 | No se pudo cancelar el pedido, intenta de nuevo. |
+ 
+ ---
+ 
+@@ -766,6 +773,7 @@ Con esto, **todos los endpoints planeados originalmente en el Product Backlog es
+ | 06/10/2026 | `api/libros.php` | Nuevo `POST ?accion=portada&id=#` para cambiar la portada; el orden `recientes` desempata por `id_producto`; se valida con `getimagesize()` que el archivo sea una imagen |
+ | 06/10/2026 | `api/wishlist.php` | `GET` ahora incluye `cantidad` y `estado` del libro; `POST` devuelve el `id_wishlist` real (antes devolvía `true`) |
+ | 06/10/2026 | `api/pedidos.php` | El `total` se redondea a 2 decimales; un error de base de datos responde `500` con mensaje genérico en lugar del texto de PDO |
++| 06/10/2026 | `api/pedidos.php` | Cancelar un pedido devuelve el stock (transacción); un pedido `cancelado` ya no puede cambiar de estado (`409`) |
+ | 06/10/2026 | *(general)* | Si falla la conexión a la BD, ahora se responde JSON `500` ("No se pudo conectar con la base de datos.") y el detalle se registra con `error_log` |
+ 
+ ---

@@ -72,7 +72,7 @@ async function cargarDetalleLibro() {
   document.getElementById('fichaEditorial').textContent = libro.editorial || '—';
   document.getElementById('fichaCategoria').textContent = libro.nombre_categoria;
   document.getElementById('fichaFecha').textContent = libro.fecha_publicacion
-    ? new Date(libro.fecha_publicacion).toLocaleDateString('es-GT')
+    ? formatearFechaSola(libro.fecha_publicacion)
     : '—';
   document.getElementById('fichaStock').textContent = libro.cantidad;
 
@@ -225,7 +225,7 @@ function crearTarjetaResena(resena) {
 
   const fecha = document.createElement('p');
   fecha.className = 'small text-muted mb-2';
-  fecha.textContent = new Date(resena.fecha).toLocaleDateString('es-GT');
+  fecha.textContent = formatearFechaHora(resena.fecha);
 
   const comentario = document.createElement('p');
   comentario.className = 'mb-0';

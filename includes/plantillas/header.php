@@ -8,7 +8,7 @@ $rutaBase     = $rutaBase ?? '';
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?= htmlspecialchars($tituloPagina) ?> | El Faro Literario</title>
-
+  <link rel="icon" type="image/png" href="<?= $rutaBase ?>assets/img/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
@@ -57,7 +57,7 @@ $rutaBase     = $rutaBase ?? '';
           <button class="btn btn-primary ms-2" type="submit">Buscar</button>
         </form>
 
-        <!-- Zona de sesión: la lógica real llega en Feature/frontend-auth -->
+        <!-- Zona de sesión: auth.js muestra una u otra según verificar-sesion -->
         <div class="ms-lg-3 my-2 my-lg-0">
           <div id="zonaSesionInvitado" class="d-flex gap-2">
             <a class="btn btn-outline-primary" href="<?= $rutaBase ?>public/vistas/login.php">Iniciar sesión</a>
@@ -72,7 +72,7 @@ $rutaBase     = $rutaBase ?? '';
               <li><a class="dropdown-item" href="<?= $rutaBase ?>public/vistas/perfil.php">Mi perfil</a></li>
               <li><a class="dropdown-item" href="<?= $rutaBase ?>public/vistas/mis-pedidos.php">Mis pedidos</a></li>
               <li><a class="dropdown-item" href="<?= $rutaBase ?>public/vistas/wishlist.php">Lista de deseos</a></li>
-              <li id="enlaceAdmin" class="d-none"><a class="dropdown-item" href="<?= $rutaBase ?>public/vistas/admin/libros.php">Panel de administración</a></li>
+              <li id="enlaceAdmin" class="d-none"><a class="dropdown-item" href="<?= $rutaBase ?>public/vistas/admin/index.php">Panel de administración</a></li>
               <li><hr class="dropdown-divider"></li>
               <li><button id="btnCerrarSesion" class="dropdown-item" type="button">Cerrar sesión</button></li>
             </ul>

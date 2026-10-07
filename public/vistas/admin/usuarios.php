@@ -31,7 +31,7 @@ require_once __DIR__ . '/../../../includes/plantillas/admin-nav.php';
 <div class="modal fade" id="modalUsuario" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form id="formUsuario" novalidate>
+      <form id="formUsuario">
         <div class="modal-header">
           <h2 class="modal-title h5">Editar usuario</h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
@@ -41,19 +41,19 @@ require_once __DIR__ . '/../../../includes/plantillas/admin-nav.php';
           <div class="row g-3">
             <div class="col-md-6">
               <label for="nombreUsuarioAdmin" class="form-label">Nombre</label>
-              <input type="text" class="form-control" id="nombreUsuarioAdmin" name="nombre" required>
+              <input type="text" class="form-control" id="nombreUsuarioAdmin" name="nombre" maxlength="100" required>
             </div>
             <div class="col-md-6">
               <label for="apellidoUsuarioAdmin" class="form-label">Apellido</label>
-              <input type="text" class="form-control" id="apellidoUsuarioAdmin" name="apellido" required>
+              <input type="text" class="form-control" id="apellidoUsuarioAdmin" name="apellido" maxlength="100" required>
             </div>
             <div class="col-md-6">
               <label for="telefonoUsuarioAdmin" class="form-label">Teléfono</label>
-              <input type="tel" class="form-control" id="telefonoUsuarioAdmin" name="telefono">
+              <input type="tel" class="form-control" id="telefonoUsuarioAdmin" name="telefono" maxlength="20">
             </div>
             <div class="col-md-6">
               <label for="direccionUsuarioAdmin" class="form-label">Dirección</label>
-              <input type="text" class="form-control" id="direccionUsuarioAdmin" name="direccion">
+              <input type="text" class="form-control" id="direccionUsuarioAdmin" name="direccion" maxlength="255">
             </div>
           </div>
         </div>

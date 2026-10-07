@@ -1,7 +1,6 @@
 // assets/js/inicio.js
 document.addEventListener('DOMContentLoaded', () => {
   cargarDestacados();
-  actualizarContadorCarrito();
 });
 
 // api/libros.php → app/controladores/LibroController.php

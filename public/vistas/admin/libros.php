@@ -45,7 +45,7 @@ require_once __DIR__ . '/../../../includes/plantillas/admin-nav.php';
 <div class="modal fade" id="modalLibro" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
-      <form id="formLibro" novalidate>
+      <form id="formLibro">
         <div class="modal-header">
           <h2 class="modal-title h5" id="tituloModalLibro">Nuevo libro</h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
@@ -63,15 +63,15 @@ require_once __DIR__ . '/../../../includes/plantillas/admin-nav.php';
             </div>
             <div class="col-md-6">
               <label for="nombreLibro" class="form-label">Título</label>
-              <input type="text" class="form-control" id="nombreLibro" name="nombre" required>
+              <input type="text" class="form-control" id="nombreLibro" name="nombre" maxlength="200" required>
             </div>
             <div class="col-md-6">
               <label for="autorLibro" class="form-label">Autor</label>
-              <input type="text" class="form-control" id="autorLibro" name="autor" required>
+              <input type="text" class="form-control" id="autorLibro" name="autor" maxlength="150" required>
             </div>
             <div class="col-md-6">
               <label for="editorialLibro" class="form-label">Editorial</label>
-              <input type="text" class="form-control" id="editorialLibro" name="editorial">
+              <input type="text" class="form-control" id="editorialLibro" name="editorial" maxlength="150">
             </div>
             <div class="col-md-3">
               <label for="precioLibro" class="form-label">Precio (Q)</label>
@@ -92,7 +92,7 @@ require_once __DIR__ . '/../../../includes/plantillas/admin-nav.php';
             <div class="col-12">
               <label for="imagenLibro" class="form-label">Portada</label>
               <input type="file" class="form-control" id="imagenLibro" name="imagen" accept=".jpg,.jpeg,.png,.webp">
-              <p class="small text-muted mb-0">JPG, PNG o WEBP, máx. 2 MB. Al editar, dejar vacío conserva la portada actual.</p>
+              <p class="small text-muted mb-0">JPG, PNG o WEBP, máx. 2 MB. Al editar, dejar vacío conserva la portada actual; si eliges una imagen, reemplaza la anterior.</p>
             </div>
           </div>
         </div>

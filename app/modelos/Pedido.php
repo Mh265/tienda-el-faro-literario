@@ -47,9 +47,9 @@ class Pedido
     }
 
     // Actualizar pedido.
-    public static function actualizar($id_pedido, $total, $estado)
+    public static function actualizar($id_pedido, $total, $estado, $conexion = null)
     {
-        $conexion = BaseDatos::conectar();
+        $conexion = $conexion ?? BaseDatos::conectar();
         $sql = "UPDATE pedidos SET total = :total, estado = :estado WHERE id_pedido = :id_pedido";
         $stmt = $conexion->prepare($sql);
         $stmt->bindParam(":total", $total);

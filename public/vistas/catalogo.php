@@ -58,7 +58,7 @@ require_once __DIR__ . '/../../includes/plantillas/header.php';
     </div>
 
     <div class="col-12 col-md-4 text-md-end">
-      <button type="submit" class="btn btn-primary w-100 w-md-auto">Aplicar filtros</button>
+      <button type="submit" class="btn btn-primary w-100">Aplicar filtros</button>
     </div>
 
   </form>

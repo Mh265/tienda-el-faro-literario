@@ -48,7 +48,7 @@ function crearTarjetaPedido(pedido) {
   numero.textContent = `Pedido #${pedido.id_pedido}`;
   const fecha = document.createElement('p');
   fecha.className = 'small text-muted mb-0';
-  fecha.textContent = new Date(pedido.fecha).toLocaleDateString('es-GT', { year: 'numeric', month: 'long', day: 'numeric' });
+  fecha.textContent = formatearFechaHora(pedido.fecha, { year: 'numeric', month: 'long', day: 'numeric' });
   info.append(numero, fecha);
 
   const badgeEstado = document.createElement('span');

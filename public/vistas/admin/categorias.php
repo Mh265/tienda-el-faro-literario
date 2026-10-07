@@ -38,7 +38,7 @@ require_once __DIR__ . '/../../../includes/plantillas/admin-nav.php';
 <div class="modal fade" id="modalCategoria" tabindex="-1" aria-labelledby="tituloModalCategoria" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form id="formCategoria" novalidate>
+      <form id="formCategoria">
         <div class="modal-header">
           <h2 class="modal-title h5" id="tituloModalCategoria">Nueva categoría</h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>

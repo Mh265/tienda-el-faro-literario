@@ -166,11 +166,29 @@ function crearTarjetaLibro(libro) {
     cuerpo.appendChild(badgeStock);
   }
 
+  // Los dos botones van juntos al fondo de la tarjeta.
+  const zonaBotones = document.createElement('div');
+  zonaBotones.className = 'd-grid gap-2 mt-auto';
+
   const enlaceDetalle = document.createElement('a');
   enlaceDetalle.href = `detalle-libro.php?id=${libro.id_producto}`;
-  enlaceDetalle.className = 'btn btn-outline-primary mt-auto btn-sm';
+  enlaceDetalle.className = 'btn btn-outline-primary btn-sm';
   enlaceDetalle.textContent = 'Ver detalle';
-  cuerpo.appendChild(enlaceDetalle);
+
+  const btnAgregar = document.createElement('button');
+  btnAgregar.type = 'button';
+  btnAgregar.className = 'btn btn-primary btn-sm';
+  btnAgregar.textContent = 'Agregar al carrito';
+  btnAgregar.disabled = sinStock;
+  btnAgregar.addEventListener('click', () => {
+    // agregarAlCarrito está en carrito.js (global); el tercer parámetro es el stock.
+    const resultado = agregarAlCarrito(libro, 1, Number(libro.cantidad));
+    btnAgregar.textContent = resultado.limitadoPorStock ? 'Máximo en carrito' : 'Agregado ✓';
+    setTimeout(() => (btnAgregar.textContent = 'Agregar al carrito'), 1500);
+  });
+
+  zonaBotones.append(enlaceDetalle, btnAgregar);
+  cuerpo.appendChild(zonaBotones);
 
   tarjeta.append(img, cuerpo);
   columna.appendChild(tarjeta);
