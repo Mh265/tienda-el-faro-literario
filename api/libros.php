@@ -28,7 +28,14 @@ switch ($metodo) {
     case 'POST':
         // $_FILES['imagen'] no existe si el form no incluyó el campo file;
         // se pasa null en ese caso y AyudanteArchivo lo trata como "sin portada".
-        LibroController::crear($_POST, $_FILES['imagen'] ?? null);
+        if ($accion === 'portada') {
+            if ($id === null) {
+                Respuesta::error('Debe indicar el id del libro para cambiar su portada.', 400);
+            }
+            LibroController::actualizarPortada($id, $_FILES['imagen'] ?? null);
+        } else {
+            LibroController::crear($_POST, $_FILES['imagen'] ?? null);
+        }
         break;
 
     case 'PUT':

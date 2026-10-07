@@ -11,19 +11,19 @@ require_once __DIR__ . '/../../includes/plantillas/header.php';
 
       <h2 class="h4 text-center mb-4">Crear cuenta</h2>
 
-      <form id="formRegistro" novalidate>
+      <form id="formRegistro">
         <div class="row g-3">
           <div class="col-md-6">
             <div class="form-floating mb-3">
               <input type="text" class="form-control" id="nombreRegistro" name="nombre"
-                     placeholder="Nombre" required autocomplete="given-name">
+                     placeholder="Nombre" maxlength="100" required autocomplete="given-name">
               <label for="nombreRegistro">Nombre</label>
             </div>
           </div>
           <div class="col-md-6">
             <div class="form-floating mb-3">
               <input type="text" class="form-control" id="apellidoRegistro" name="apellido"
-                     placeholder="Apellido" required autocomplete="family-name">
+                     placeholder="Apellido" maxlength="100" required autocomplete="family-name">
               <label for="apellidoRegistro">Apellido</label>
             </div>
           </div>
@@ -31,7 +31,7 @@ require_once __DIR__ . '/../../includes/plantillas/header.php';
 
         <div class="form-floating mb-3">
           <input type="email" class="form-control" id="correoRegistro" name="correo"
-                 placeholder="nombre@correo.com" required autocomplete="email">
+                 placeholder="nombre@correo.com" maxlength="150" required autocomplete="email">
           <label for="correoRegistro">Correo electrónico</label>
         </div>
 
@@ -46,14 +46,14 @@ require_once __DIR__ . '/../../includes/plantillas/header.php';
           <div class="col-md-6">
             <div class="form-floating mb-3">
               <input type="tel" class="form-control" id="telefonoRegistro" name="telefono"
-                     placeholder="Teléfono" autocomplete="tel">
+                     placeholder="Teléfono" maxlength="20" autocomplete="tel">
               <label for="telefonoRegistro">Teléfono <span class="texto-auxiliar">(opcional)</span></label>
             </div>
           </div>
           <div class="col-md-6">
             <div class="form-floating mb-3">
               <input type="text" class="form-control" id="direccionRegistro" name="direccion"
-                     placeholder="Dirección" autocomplete="street-address">
+                     placeholder="Dirección" maxlength="255" autocomplete="street-address">
               <label for="direccionRegistro">Dirección <span class="texto-auxiliar">(opcional)</span></label>
             </div>
           </div>

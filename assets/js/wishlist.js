@@ -65,6 +65,14 @@ function crearFilaWishlist(item, rutaBase) {
   btnAgregar.type = 'button';
   btnAgregar.className = 'btn btn-sm btn-primary w-100';
   btnAgregar.textContent = 'Agregar al carrito';
+
+  // wishlist.php ya devuelve cantidad y estado del libro.
+  const noDisponible = Number(item.cantidad) === 0 || item.estado !== 'activo';
+  btnAgregar.disabled = noDisponible;
+  if (noDisponible) {
+    btnAgregar.textContent = 'No disponible';
+  }
+
   btnAgregar.addEventListener('click', () => {
     agregarAlCarrito({
       id_producto: item.id_producto,
@@ -72,7 +80,7 @@ function crearFilaWishlist(item, rutaBase) {
       autor: item.autor,
       precio: item.precio,
       imagen: item.imagen
-    });
+    }, 1, Number(item.cantidad));
     btnAgregar.textContent = 'Agregado ✓';
     setTimeout(() => (btnAgregar.textContent = 'Agregar al carrito'), 1500);
   });

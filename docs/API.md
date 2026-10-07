@@ -2,7 +2,7 @@
 
 Contrato entre Backend (Milton) y Frontend (Jenifer). Lo mantiene Milton y se actualiza en el mismo Pull Request de cada feature de backend.
 
-**Última actualización:** 26/09/2026 · **Features documentadas:** `Feature/categoria-api`, `Feature/wishlist-api`, `Feature/resena-api`, `Feature/usuario-api`
+**Última actualización:** 06/10/2026 · **Features documentadas:** `Feature/categoria-api`, `Feature/wishlist-api`, `Feature/resena-api`, `Feature/usuario-api`
 
 **Estados:** ✅ implementado · 🚧 en desarrollo · 📝 propuesto (aún no implementado)
 
@@ -194,6 +194,7 @@ Enruta por **método HTTP**. `accion` solo se usa dentro de `GET` (`admin-listad
 | `GET` | `admin-listado` | Administrador | Listado completo (activos e inactivos) para el panel admin |
 | `POST` | *(ninguna)* | Administrador | Crea un libro nuevo |
 | `PUT` con `?id=` | *(ninguna)* | Administrador | Actualiza los datos de un libro |
+| `POST` con `?id=` | `portada` | Administrador | Cambia la portada de un libro existente |
 | `PUT` con `?id=` | `reactivar` | Administrador | Reactiva un libro dado de baja |
 | `DELETE` con `?id=` | *(ninguna)* | Administrador | Da de baja el libro (`estado='inactivo'`); **nunca es un DELETE físico** |
 
@@ -301,7 +302,7 @@ navegador lo arma solo (con el boundary correcto) al usar `FormData`.
 
 #### Actualizar — `PUT api/libros.php?id=5`
 
-Requiere sesión de tipo `administrador`. Mismo cuerpo y mismas reglas que `crear`. No cambia `estado` (para eso están `reactivar` y el `DELETE`). No permite actualizar la portada (`imagen`) por este medio; ese campo queda intacto. Imagen se ignora si viene en el cuerpo.
+Requiere sesión de tipo `administrador`. Mismo cuerpo y mismas reglas que `crear`. No cambia `estado` (para eso están `reactivar` y el `DELETE`). No actualiza la portada (`imagen`): ese campo queda intacto y se ignora si viene en el cuerpo. Para cambiar la portada se usa `POST api/libros.php?accion=portada&id=#` (ver más abajo).
 
 Respuesta `200`: `{ "exito": true, "mensaje": "Libro actualizado correctamente.", "datos": null }`
 
@@ -309,6 +310,28 @@ Mismos códigos de error que `crear`, más:
 
 | Código | Mensaje |
 |---|---|
+| 404 | Libro no encontrado. |
+
+#### Cambiar portada — `POST api/libros.php?accion=portada&id=5`
+
+Requiere sesión de tipo `administrador`. **Cuerpo: `multipart/form-data`** con un solo campo de archivo:
+
+| Campo | Tipo | Obligatorio | Regla |
+|---|---|---|---|
+| `imagen` | **archivo** | Sí | JPG/JPEG/PNG/WEBP, máximo 2 MB. Se valida la extensión y que el contenido sea realmente una imagen |
+
+Igual que en `crear`, el servidor genera el nombre del archivo y solo guarda ese nombre en la BD. La portada anterior se reemplaza en la BD (el archivo viejo queda en `assets/img/uploads/`).
+
+Respuesta `200`: `{ "exito": true, "mensaje": "Portada actualizada correctamente.", "datos": { "imagen": "libro_66f1a2b3c4d5e.jpg" } }`
+
+| Código | Mensaje |
+|---|---|
+| 400 | El id del libro no es válido. / Debe indicar el id del libro para cambiar su portada. |
+| 400 | Debe seleccionar una imagen. |
+| 400 | La imagen no debe superar los 2 MB. |
+| 400 | Formato de imagen no permitido. Use JPG, PNG o WEBP. |
+| 400 | El archivo no es una imagen válida. |
+| 403 | No tiene permisos para cambiar la portada. |
 | 404 | Libro no encontrado. |
 
 #### Dar de baja — `DELETE api/libros.php?id=5`
@@ -529,7 +552,7 @@ Respuesta `200`:
   "mensaje": "Lista de deseos obtenida correctamente.",
   "datos": [
     { "id_wishlist": 4, "id_usuario": 2, "id_producto": 5, "fecha_agregado": "2026-09-20 12:00:00",
-      "nombre": "Dune", "autor": "Frank Herbert", "precio": "210.00", "imagen": null }
+      "nombre": "Dune", "autor": "Frank Herbert", "precio": "210.00", "imagen": null, "cantidad": 9, "estado": "activo" }
   ]
 }
 ```
@@ -740,6 +763,10 @@ Con esto, **todos los endpoints planeados originalmente en el Product Backlog es
 | 26/09/2026 | `api/resenas.php` | Documentado: listado por libro, crear, editar (dueño), eliminar (dueño o admin) |
 | 26/09/2026 | `api/usuarios.php` | Documentado: perfil propio, gestión administrativa (listado, detalle, editar, eliminar) |
 | 26/09/2026 | *(general)* | RF03 y confirmación de pedido por correo (parte de RF20) marcados como fuera de alcance del proyecto |
+| 06/10/2026 | `api/libros.php` | Nuevo `POST ?accion=portada&id=#` para cambiar la portada; el orden `recientes` desempata por `id_producto`; se valida con `getimagesize()` que el archivo sea una imagen |
+| 06/10/2026 | `api/wishlist.php` | `GET` ahora incluye `cantidad` y `estado` del libro; `POST` devuelve el `id_wishlist` real (antes devolvía `true`) |
+| 06/10/2026 | `api/pedidos.php` | El `total` se redondea a 2 decimales; un error de base de datos responde `500` con mensaje genérico en lugar del texto de PDO |
+| 06/10/2026 | *(general)* | Si falla la conexión a la BD, ahora se responde JSON `500` ("No se pudo conectar con la base de datos.") y el detalle se registra con `error_log` |
 
 ---
 

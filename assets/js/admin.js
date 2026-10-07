@@ -59,7 +59,7 @@ async function inicializarDashboard() {
     celdaId.textContent = `#${pedido.id_pedido}`;
 
     const celdaFecha = document.createElement('td');
-    celdaFecha.textContent = new Date(pedido.fecha).toLocaleDateString('es-GT');
+    celdaFecha.textContent = formatearFechaHora(pedido.fecha);
 
     const celdaTotal = document.createElement('td');
     celdaTotal.textContent = `Q${Number(pedido.total).toFixed(2)}`;
@@ -201,6 +201,22 @@ function abrirModalEdicionLibro(libro) {
   new bootstrap.Modal(document.getElementById('modalLibro')).show();
 }
 
+// Envía un FormData (archivo + campos). Se usa fetch directo y sin fijar
+// Content-Type: el navegador arma el boundary solo.
+async function enviarFormData(recurso, formData) {
+  try {
+    const respuesta = await fetch(API_URL + recurso, {
+      method: 'POST',
+      credentials: 'same-origin',
+      body: formData
+    });
+    const cuerpo = await respuesta.json();
+    return { exito: cuerpo.exito, mensaje: cuerpo.mensaje, datos: cuerpo.datos };
+  } catch (error) {
+    return { exito: false, mensaje: 'No se pudo completar la operación, intenta de nuevo.' };
+  }
+}
+
 // api/libros.php → app/controladores/LibroController.php
 async function manejarSubmitLibro(evento) {
   evento.preventDefault();
@@ -210,8 +226,8 @@ async function manejarSubmitLibro(evento) {
   let resultado;
 
   if (idLibro) {
-    // PUT (actualizar) no acepta portada nueva, así que va como JSON normal.
-    // Libro::actualizar() no toca la columna `imagen`: la portada se conserva.
+    // PUT (actualizar) va como JSON normal y no toca la portada.
+    // Si se eligió una portada nueva, se envía aparte (accion=portada) después.
     const datos = {
       id_categoria: formulario.id_categoria.value,
       nombre: formulario.nombre.value.trim(),
@@ -224,21 +240,20 @@ async function manejarSubmitLibro(evento) {
       fecha_publicacion: formulario.fecha_publicacion.value || null
     };
     resultado = await llamarApi(`libros.php?id=${idLibro}`, 'PUT', datos);
-  } else {
-    // POST (crear) va como FormData por la portada (docs/API.md): fetch
-    // directo, sin fijar Content-Type, el navegador arma el boundary solo.
-    const formData = new FormData(formulario);
-    try {
-      const respuesta = await fetch(API_URL + 'libros.php', {
-        method: 'POST',
-        credentials: 'same-origin',
-        body: formData
-      });
-      const cuerpo = await respuesta.json();
-      resultado = { exito: cuerpo.exito, mensaje: cuerpo.mensaje, datos: cuerpo.datos };
-    } catch (error) {
-      resultado = { exito: false, mensaje: 'No se pudo completar la operación, intenta de nuevo.' };
+
+    // Portada nueva (opcional): POST api/libros.php?accion=portada&id=#
+    const archivo = formulario.imagen.files[0];
+    if (resultado.exito && archivo) {
+      const formDataPortada = new FormData();
+      formDataPortada.append('imagen', archivo);
+      const resultadoPortada = await enviarFormData(`libros.php?accion=portada&id=${idLibro}`, formDataPortada);
+      if (!resultadoPortada.exito) {
+        resultado = { exito: false, mensaje: `Los datos se guardaron, pero la portada no: ${resultadoPortada.mensaje}` };
+      }
     }
+  } else {
+    // POST (crear) va como FormData por la portada (docs/API.md).
+    resultado = await enviarFormData('libros.php', new FormData(formulario));
   }
 
   zonaMensaje.innerHTML = '';
@@ -438,7 +453,7 @@ function crearFilaPedidoAdmin(pedido, nombresPorId) {
   celdaUsuario.textContent = nombresPorId[pedido.id_usuario] || `Usuario #${pedido.id_usuario}`;
 
   const celdaFecha = document.createElement('td');
-  celdaFecha.textContent = new Date(pedido.fecha).toLocaleDateString('es-GT');
+  celdaFecha.textContent = formatearFechaHora(pedido.fecha);
 
   const celdaTotal = document.createElement('td');
   celdaTotal.textContent = `Q${Number(pedido.total).toFixed(2)}`;
@@ -553,7 +568,7 @@ function crearFilaUsuarioAdmin(usuario) {
   celdaTipo.appendChild(badgeTipo);
 
   const celdaRegistro = document.createElement('td');
-  celdaRegistro.textContent = new Date(usuario.fecha_registro).toLocaleDateString('es-GT');
+  celdaRegistro.textContent = formatearFechaHora(usuario.fecha_registro);
 
   const celdaAcciones = document.createElement('td');
   celdaAcciones.className = 'text-end';

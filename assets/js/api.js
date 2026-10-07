@@ -51,3 +51,17 @@ async function llamarApi(recurso, metodo = 'GET', cuerpo = null) {
     estado: respuesta.status
   };
 }
+
+// Fecha sola (ej. "2020-05-01", columna DATE). Se arma con partes numéricas
+// porque new Date('2020-05-01') se interpreta en UTC y en Guatemala (UTC-6)
+// mostraría el día anterior.
+function formatearFechaSola(textoFecha, opciones) {
+  const [anio, mes, dia] = textoFecha.split('-').map(Number);
+  return new Date(anio, mes - 1, dia).toLocaleDateString('es-GT', opciones);
+}
+
+// Fecha con hora (ej. "2026-09-16 10:00:00", columna TIMESTAMP). MySQL la manda
+// con espacio y Safari no la entiende: se cambia el espacio por "T".
+function formatearFechaHora(textoFechaHora, opciones) {
+  return new Date(textoFechaHora.replace(' ', 'T')).toLocaleDateString('es-GT', opciones);
+}

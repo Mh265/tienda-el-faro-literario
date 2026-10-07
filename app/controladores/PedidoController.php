@@ -55,6 +55,9 @@ class PedidoController
                 ];
             }
 
+            // Evita decimales sobrantes por la multiplicación de precios.
+            $total = round($total, 2);
+
             $idPedido = Pedido::crear($idUsuario, $total, 'pendiente', $conexion);
 
             foreach ($lineas as $linea) {
@@ -73,7 +76,16 @@ class PedidoController
                 'total'     => $total
             ], 201);
 
+        } catch (PDOException $e) {
+            // Error de base de datos: se registra, pero no se muestra al usuario.
+            // (PDOException va primero porque también es un Exception.)
+            if ($conexion->inTransaction()) {
+                $conexion->rollBack();
+            }
+            error_log('Error al crear pedido: ' . $e->getMessage());
+            Respuesta::error('No se pudo crear el pedido, intenta de nuevo.', 500);
         } catch (Exception $e) {
+            // Reglas de negocio (libro no disponible, stock insuficiente...).
             if ($conexion->inTransaction()) {
                 $conexion->rollBack();
             }

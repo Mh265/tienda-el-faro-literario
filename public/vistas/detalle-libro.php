@@ -79,7 +79,7 @@ require_once __DIR__ . '/../../includes/plantillas/header.php';
     <!-- Formulario: se muestra solo si hay sesión activa (lo decide detalle-libro.js) -->
     <div id="formularioResenaContenedor" class="tarjeta-descripcion p-3 p-md-4 d-none">
       <h3 class="h6 mb-3" id="tituloFormResena">Deja tu reseña</h3>
-      <form id="formResena" novalidate>
+      <form id="formResena">
         <div class="mb-3">
           <label for="calificacionResena" class="form-label">Calificación</label>
           <select class="form-select" id="calificacionResena" name="calificacion" required style="max-width: 150px;">

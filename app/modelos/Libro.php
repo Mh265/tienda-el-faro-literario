@@ -38,9 +38,10 @@ class Libro
             'precio_asc'  => 'p.precio ASC',
             'precio_desc' => 'p.precio DESC',
             'nombre_asc'  => 'p.nombre ASC',
-            'recientes'   => 'p.fecha_creacion DESC'
+            // El id desempata: los libros del seed se crearon en el mismo segundo.
+            'recientes'   => 'p.fecha_creacion DESC, p.id_producto DESC'
         ];
-        $orden = $ordenesPermitidos[$filtros['orden'] ?? ''] ?? 'p.fecha_creacion DESC';
+        $orden = $ordenesPermitidos[$filtros['orden'] ?? ''] ?? 'p.fecha_creacion DESC, p.id_producto DESC';
 
         $sql = "SELECT p.*, c.nombre AS nombre_categoria
                 FROM productos p
@@ -63,7 +64,7 @@ class Libro
         $sql = "SELECT p.*, c.nombre AS nombre_categoria
                 FROM productos p
                 INNER JOIN categorias c ON c.id_categoria = p.id_categoria
-                ORDER BY p.fecha_creacion DESC";
+                ORDER BY p.fecha_creacion DESC, p.id_producto DESC";
         $stmt = $conexion->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -131,6 +132,17 @@ class Libro
         $stmt->bindParam(":precio", $precio);
         $stmt->bindParam(":cantidad", $cantidad, PDO::PARAM_INT);
         $stmt->bindParam(":fecha_publicacion", $fecha_publicacion);
+        $stmt->bindParam(":id_producto", $id_producto, PDO::PARAM_INT);
+        return $stmt->execute();
+    }
+
+    // Cambiar solo la portada del libro.
+    public static function actualizarImagen($id_producto, $imagen)
+    {
+        $conexion = BaseDatos::conectar();
+        $sql = "UPDATE productos SET imagen = :imagen WHERE id_producto = :id_producto";
+        $stmt = $conexion->prepare($sql);
+        $stmt->bindParam(":imagen", $imagen);
         $stmt->bindParam(":id_producto", $id_producto, PDO::PARAM_INT);
         return $stmt->execute();
     }

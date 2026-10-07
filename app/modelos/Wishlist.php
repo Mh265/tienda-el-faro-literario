@@ -6,7 +6,7 @@ class Wishlist
     public static function obtenerPorUsuario($id_usuario)
     {
         $conexion = BaseDatos::conectar();
-        $sql = "SELECT w.*, p.nombre, p.autor, p.precio, p.imagen
+        $sql = "SELECT w.*, p.nombre, p.autor, p.precio, p.imagen, p.cantidad, p.estado
                 FROM wishlist w
                 INNER JOIN productos p ON p.id_producto = w.id_producto
                 WHERE w.id_usuario = :id_usuario
@@ -36,9 +36,10 @@ class Wishlist
         $stmt = $conexion->prepare($sql);
         $stmt->bindParam(":id_usuario", $id_usuario, PDO::PARAM_INT);
         $stmt->bindParam(":id_producto", $id_producto, PDO::PARAM_INT);
-        return $stmt->execute();
+        $stmt->execute();
+        return $conexion->lastInsertId();
     }
-    
+
     // Eliminar entrada por ID.
     public static function eliminar($id_wishlist)
     {

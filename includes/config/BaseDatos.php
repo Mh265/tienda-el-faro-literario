@@ -18,7 +18,14 @@ class BaseDatos
             $conexion->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             return $conexion;
         } catch (PDOException $e) {
-            die("Error de conexión: " . $e->getMessage());
+            // El detalle técnico va al log del servidor, no a la pantalla del usuario.
+            error_log("Error de conexión: " . $e->getMessage());
+            http_response_code(500);
+            header('Content-Type: application/json; charset=utf-8');
+            die(json_encode([
+                'exito'   => false,
+                'mensaje' => 'No se pudo conectar con la base de datos.'
+            ]));
         }
     }
 }
