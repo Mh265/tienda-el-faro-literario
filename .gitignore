@@ -24,7 +24,3 @@ desktop.ini
 # Bases de datos locales / respaldos
 *.sql.bak
 *.sqlite
-
-# Uploads de usuarios en pruebas locales (si guardan portadas subidas por el usuario)
-/assets/img/uploads/*
-!/assets/img/uploads/.gitkeep
