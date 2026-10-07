@@ -1,8 +1,6 @@
 # API — El Faro Literario
 
-Contrato entre Backend (Milton) y Frontend (Jenifer). Lo mantiene Milton y se actualiza en el mismo Pull Request de cada feature de backend.
-
-**Última actualización:** 06/10/2026 · **Features documentadas:** `Feature/categoria-api`, `Feature/wishlist-api`, `Feature/resena-api`, `Feature/usuario-api`
+Contrato entre Backend  y Frontend.
 
 **Estados:** ✅ implementado · 🚧 en desarrollo · 📝 propuesto (aún no implementado)
 
