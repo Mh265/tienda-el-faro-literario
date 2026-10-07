@@ -15,7 +15,7 @@ require_once __DIR__ . '/../includes/plantillas/header.php';
   </div>
   <div class="col-lg-6">
     <div class="hero-portada-generica">
-      <img src="<?= $rutaBase ?>assets/img/portada-defecto.svg" alt="Portadas de libros" height="180">
+      <img src="<?= $rutaBase ?>assets/img/uploads/hojas-de-hierba.jpg" alt="Portadas de libros" height="180">
     </div>
   </div>
 </section>
