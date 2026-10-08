@@ -21,7 +21,7 @@ require_once __DIR__ . '/../../includes/plantillas/header.php';
       <form id="formLogin">
         <div class="form-floating mb-3">
           <input type="email" class="form-control" id="correoLogin" name="correo"
-                 placeholder="nombre@correo.com" maxlength="150" required autocomplete="email">
+                 placeholder="Correo electrónico" maxlength="150" required autocomplete="email">
           <label for="correoLogin">Correo electrónico</label>
         </div>
 
